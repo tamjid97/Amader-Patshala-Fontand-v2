@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation" 
 import {
   Bell,
   CreditCard,
@@ -29,6 +30,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { toast } from "sonner" 
+import { logout } from "@/app/service/logout"
+
 
 type IUser = {
   success: boolean;
@@ -98,7 +102,8 @@ function BrandLogo() {
   )
 }
 
-function ProfileMenu({ user }: { user: IUser }) {
+
+function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) {
   const profilePic = user?.data?.profilePicture || undefined;
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
 
@@ -144,7 +149,8 @@ function ProfileMenu({ user }: { user: IUser }) {
           ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive">
+        
+        <DropdownMenuItem variant="destructive" onClick={onLogout}>
           <LogOut className="mr-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>
@@ -155,6 +161,17 @@ function ProfileMenu({ user }: { user: IUser }) {
 
 export function Navbar({ user }: NavbarProps) {
   const [open, setOpen] = React.useState(false)
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("User Logged Out Successfully!");
+      router.push("/login");
+    } catch (error) {
+      toast.error("Failed to log out");
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -217,7 +234,8 @@ export function Navbar({ user }: NavbarProps) {
         </div>
 
         <div className="flex items-center">
-          <ProfileMenu user={user} />
+          
+          <ProfileMenu user={user} onLogout={handleLogout} />
         </div>
       </div>
     </header>
