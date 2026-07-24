@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toast";
 import { Navbar } from "@/components/shared/navbar";
+import { getMe } from "./service/getMe";
 
 
 
@@ -11,7 +12,7 @@ import { Navbar } from "@/components/shared/navbar";
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export default function RootLayout({
 
 
 
-
+const user = await getMe();
 
 
   return (
@@ -29,7 +30,7 @@ export default function RootLayout({
       
     >
       <body className="min-h-full flex flex-col">
-        <Navbar/>
+        <Navbar user={user}/>
         <Toaster />
         
         {children}

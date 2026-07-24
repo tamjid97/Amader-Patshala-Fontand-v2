@@ -14,7 +14,6 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,6 +29,29 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+
+type IUser = {
+  success: boolean;
+  message: string;
+  data: {
+    id: string;
+    name: string;
+    phoneNumber: string;
+    email: string | null;
+    profilePicture: string | null;
+    class: string;
+    institute: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+    isApproved: string;
+    status: string;
+  };
+};
+
+type NavbarProps = {
+  user: IUser
+}
 
 const navLinks = [
   { label: "Home", href: "#" },
@@ -76,7 +98,10 @@ function BrandLogo() {
   )
 }
 
-function ProfileMenu() {
+function ProfileMenu({ user }: { user: IUser }) {
+  const profilePic = user?.data?.profilePicture || undefined;
+  const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -86,26 +111,26 @@ function ProfileMenu() {
             size="icon"
             className="rounded-full"
             aria-label="Open profile menu"
-          />
+          >
+            <Avatar className="size-9">
+              <AvatarImage src={profilePic} alt={user?.data?.name || "User"} />
+              <AvatarFallback>{initial}</AvatarFallback>
+            </Avatar>
+          </Button>
         }
-      >
-        <Avatar className="size-9">
-          <AvatarImage src="/thoughtful-artist.png" alt="Alex Rivera" />
-          <AvatarFallback>AR</AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
+      />
       <DropdownMenuContent align="end" sideOffset={8} className="w-64">
         <div className="flex items-center gap-3 p-2">
           <Avatar className="size-10">
-            <AvatarImage src="/thoughtful-artist.png" alt="Alex Rivera" />
-            <AvatarFallback>AR</AvatarFallback>
+            <AvatarImage src={profilePic} alt={user?.data?.name || "User"} />
+            <AvatarFallback>{initial}</AvatarFallback>
           </Avatar>
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-medium text-foreground">
-              Alex Rivera
+              {user?.data?.name}
             </span>
             <span className="truncate text-xs text-muted-foreground">
-              alex@example.com
+              {user?.data?.phoneNumber}
             </span>
           </div>
         </div>
@@ -113,14 +138,14 @@ function ProfileMenu() {
         <DropdownMenuGroup>
           {menuItems.map((item) => (
             <DropdownMenuItem key={item.label}>
-              <item.icon />
+              <item.icon className="mr-2 h-4 w-4" />
               {item.label}
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">
-          <LogOut />
+          <LogOut className="mr-2 h-4 w-4" />
           Log out
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -128,15 +153,13 @@ function ProfileMenu() {
   )
 }
 
-export function Navbar() {
+export function Navbar({ user }: NavbarProps) {
   const [open, setOpen] = React.useState(false)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Left: Logo */}
         <div className="flex items-center gap-2">
-          {/* Mobile hamburger */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
               render={
@@ -145,13 +168,13 @@ export function Navbar() {
                   size="icon"
                   className="md:hidden"
                   aria-label="Open navigation menu"
-                />
+                >
+                  <Menu />
+                </Button>
               }
-            >
-              <Menu />
-            </SheetTrigger>
+            />
             <SheetContent side="left" className="w-72 p-0">
-              <SheetHeader className="border-b">
+              <SheetHeader className="border-b p-4">
                 <SheetTitle className="sr-only">Navigation menu</SheetTitle>
                 <BrandLogo />
               </SheetHeader>
@@ -177,7 +200,6 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Center: Nav links */}
         <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
           {navLinks.map((link) => (
             <Link
@@ -190,14 +212,12 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Mobile centered logo (since hamburger takes left) */}
         <div className="flex md:hidden">
           <BrandLogo />
         </div>
 
-        {/* Right: Profile */}
         <div className="flex items-center">
-          <ProfileMenu />
+          <ProfileMenu user={user} />
         </div>
       </div>
     </header>
