@@ -8,6 +8,7 @@ import { Navbar } from "@/components/shared/navbar";
 import { getMe } from "./service/getMe";
 import { BioBackground } from "@/components/ui/BioBackground";
 import { ThemeProvider } from '@/components/ui/theme-provider';
+import Footer from '@/components/shared/footer';
 
 
 
@@ -65,6 +66,7 @@ export default async function RootLayout({
           <main className="flex-1 z-10 w-full">
             {children}
           </main>
+          <Footer/>
 
           {process.env.NODE_ENV === 'production' && <Analytics />}
         </ThemeProvider>
