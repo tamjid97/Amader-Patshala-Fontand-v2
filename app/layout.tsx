@@ -15,16 +15,11 @@ import Footer from '@/components/shared/footer';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'BrandLogo — Bio Research Dashboard',
+  title: 'Roots Of Biology — Bio Research Dashboard',
   description: 'A premium biology-themed analytics dashboard with a glowing, animated molecular background.',
-  generator: 'v0.app',
+  generator: 'epickdev',
   icons: {
-    icon: [
-      { url: '/icon-light-32x32.png', media: '(prefers-color-scheme: light)' },
-      { url: '/icon-dark-32x32.png', media: '(prefers-color-scheme: dark)' },
-      { url: '/icon.svg', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-icon.png',
+    icon: "/icon.png",
   },
 };
 
