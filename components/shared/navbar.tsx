@@ -7,14 +7,15 @@ import { useTheme } from "next-themes"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import {
   Bell,
-  CreditCard,
+
   LogOut,
   Menu,
-  Settings,
+
   User,
   Sun,
   Moon,
-  Dna
+  Dna,
+  LayoutDashboard
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -63,16 +64,15 @@ type NavbarProps = {
 
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Analytics", href: "/analytics" },
-  { label: "Projects", href: "/projects" },
+  { label: "Batch Time", href: "/batchTime" },
+  { label: "Books", href: "/allBook" },
+  { label: "Result", href: "/result" },
 ]
 
 const menuItems = [
-  { label: "View Profile", icon: User },
-  { label: "Account Settings", icon: Settings },
-  { label: "Billing", icon: CreditCard },
-  { label: "Notifications", icon: Bell },
+  { label: "View Profile", icon: User, href: "/profile" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
+  { label: "Notifications", icon: Bell, href: "/notifications" },
 ]
 
 // 🌟 প্রফেশনাল এবং ইউনিক থিম টগল বাটন 🌟
@@ -109,7 +109,6 @@ function BrandLogo() {
     const rect = event.currentTarget.getBoundingClientRect()
     const width = rect.width
     const height = rect.height
-    // মাউসের অবস্থান লোগোর মাঝখান থেকে ক্যালকুলেট করা
     const mouseXPos = event.clientX - rect.left - width / 2
     const mouseYPos = event.clientY - rect.top - height / 2
     
@@ -123,43 +122,41 @@ function BrandLogo() {
   }
 
   return (
-    // 3D কাজ করার জন্য style={{ perspective: 1000 }} দেওয়া বাধ্যতামূলক
     <Link href="/" className="inline-block z-10" style={{ perspective: 1000 }}>
-  <motion.div
-    onMouseMove={handleMouseMove}
-    onMouseLeave={handleMouseLeave}
-    style={{
-      rotateX,
-      rotateY,
-      transformStyle: "preserve-3d",
-    }}
-    className="flex items-center gap-2.5 px-2 py-1 rounded-xl cursor-pointer group"
-  >
-    {/* 🧬 DNA আইকন যা মাউস নিলে ৩৬০ ডিগ্রি ঘুরবে (spin) */}
-    <motion.span 
-      style={{ translateZ: 40 }} // 3D পপ-আউট ইফেক্ট
-      whileHover={{ scale: 1.15, rotate: 360 }}
-      transition={{ duration: 0.6, type: "spring", stiffness: 200, damping: 10 }}
-      className="flex size-9 items-center justify-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-600 shadow-[0_4px_10px_rgba(4,120,87,0.4)] dark:shadow-[0_4px_10px_rgba(5,150,105,0.4)]"
-    >
-      <Dna className="size-5" />
-    </motion.span>
-    
-    {/* টেক্সট অংশ */}
-    <motion.span 
-      style={{ translateZ: 20 }} // 3D পপ-আউট ইফেক্ট
-      className="text-lg font-extrabold tracking-tight text-emerald-950 dark:text-emerald-50 drop-shadow-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-300"
-    >
-      আমাদের পাঠশালা
-    </motion.span>
-  </motion.div>
-</Link>
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX,
+          rotateY,
+          transformStyle: "preserve-3d",
+        }}
+        className="flex items-center gap-2.5 px-2 py-1 rounded-xl cursor-pointer group"
+      >
+        <motion.span 
+          style={{ translateZ: 40 }} 
+          whileHover={{ scale: 1.15, rotate: 360 }}
+          transition={{ duration: 0.6, type: "spring", stiffness: 200, damping: 10 }}
+          className="flex size-9 items-center justify-center rounded-lg bg-emerald-700 text-white dark:bg-emerald-600 shadow-[0_4px_10px_rgba(4,120,87,0.4)] dark:shadow-[0_4px_10px_rgba(5,150,105,0.4)]"
+        >
+          <Dna className="size-5" />
+        </motion.span>
+        
+        <motion.span 
+          style={{ translateZ: 20 }}
+          className="text-lg font-extrabold tracking-tight text-emerald-950 dark:text-emerald-50 drop-shadow-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-300"
+        >
+          আমাদের পাঠশালা
+        </motion.span>
+      </motion.div>
+    </Link>
   )
 }
 
 function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) {
   const profilePic = user?.data?.profilePicture || undefined;
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
+  const router = useRouter(); // 👈 রাউটার হুক যুক্ত করা হয়েছে
 
   return user?.success ? (
     <DropdownMenu>
@@ -200,7 +197,12 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
         <DropdownMenuSeparator className="bg-emerald-200 dark:bg-emerald-800/60" />
         <DropdownMenuGroup>
           {menuItems.map((item) => (
-            <DropdownMenuItem key={item.label} className="hover:bg-emerald-200/60 dark:hover:bg-emerald-900/50 cursor-pointer text-emerald-950 dark:text-emerald-100 transition-colors font-medium">
+            // 👈 asChild এবং Link বাদ দিয়ে onClick ব্যবহার করা হয়েছে
+            <DropdownMenuItem 
+              key={item.label} 
+              onClick={() => router.push(item.href)} 
+              className="hover:bg-emerald-200/60 dark:hover:bg-emerald-900/50 cursor-pointer text-emerald-950 dark:text-emerald-100 transition-colors font-medium"
+            >
               <item.icon className="mr-2 h-4 w-4 text-emerald-700 dark:text-emerald-400" />
               {item.label}
             </DropdownMenuItem>
