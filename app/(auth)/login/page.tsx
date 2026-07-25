@@ -11,7 +11,7 @@ export default function LoginPage() {
         
         <div className="flex flex-col items-center mb-8">
           
-         
+
         </div>
 
         
