@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
+import { RegisterAction } from "../_action/registerAction";
+import { useActionState } from "react";
 import { 
   Eye, EyeOff, User, Phone, 
   School, GraduationCap, Dna, Lock, Camera 
@@ -28,7 +31,9 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
 
-  // ছবি সিলেক্ট করলে লাইভ প্রিভিউ
+  
+  const [state, formAction, isPending] = useActionState(RegisterAction, null);
+
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -43,7 +48,7 @@ export default function RegisterForm() {
   return (
     <div className="relative flex min-h-[85vh] w-full items-center justify-center overflow-hidden p-4 md:p-8">
       
-      {/* 🧬 Ambient Biology Glow */}
+      
       <div className="pointer-events-none absolute right-1/4 top-1/4 h-72 w-72 rounded-full bg-emerald-500/20 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-1/4 left-1/4 h-72 w-72 rounded-full bg-cyan-500/20 blur-[120px]" />
 
@@ -73,9 +78,10 @@ export default function RegisterForm() {
             </p>
           </div>
 
-          <form className="p-8 pt-4">
+          
+          <form action={formAction} className="p-8 pt-4">
             
-            {/* 📸 Profile Picture Upload */}
+            
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -149,7 +155,7 @@ export default function RegisterForm() {
                   <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500" />
                   <Input
                     id="phoneNumber"
-                    name="phoneNumber"
+                    name="phone"
                     type="tel"
                     placeholder="01XXXXXXXXX"
                     required
@@ -223,14 +229,18 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
+              
+              <input type="hidden" name="role" value="USER" />
+
               {/* Submit Button */}
               <motion.div variants={itemVariants} className="pt-2 md:col-span-2">
                 <Button
                   type="submit"
+                  disabled={isPending} 
                   className="group w-full rounded-xl bg-emerald-600 py-6 text-base font-medium transition-all hover:bg-emerald-700 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] dark:bg-emerald-600 dark:hover:bg-emerald-500"
                 >
                   <span className="flex items-center justify-center">
-                    Register Now
+                    {isPending ? "Registering..." : "Register Now"}
                     <motion.span
                       className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100"
                       initial={{ x: -10 }}

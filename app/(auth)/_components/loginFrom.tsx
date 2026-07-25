@@ -88,9 +88,9 @@ export default function LoginForm() {
                   <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
                     Password
                   </Label>
-                  <a href="#" className="text-xs text-emerald-600 hover:underline dark:text-emerald-400">
+                  {/* <a href="#" className="text-xs text-emerald-600 hover:underline dark:text-emerald-400">
                     Forgot password?
-                  </a>
+                  </a> */}
                 </div>
                 <div className="relative">
                   <Input
