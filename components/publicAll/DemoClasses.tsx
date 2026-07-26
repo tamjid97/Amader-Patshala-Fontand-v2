@@ -4,19 +4,20 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { PlaySquare } from "lucide-react";
 
+// 💡 public ফোল্ডারের ইমেজের জন্য আলাদা ইম্পোর্ট করার দরকার নেই।
 const demoVideos = [
   {
     id: 1,
     title: "রুই মাছের ডিসেকশন || HSC Biology || Roots Of Biology",
     youtubeId: "https://youtu.be/spVcXwGeyLc?si=SAWIg7zXxsGK2VsV", 
-    thumbnail: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=800&auto=format&fit=crop",
+    thumbnail: "/youtobevideo1.jpeg", // 👈 সরাসরি public ফোল্ডারের পাথ
     channelName: "Roots Of Biology",
   },
   {
     id: 2,
     title: "রুই মাছের ধমনী তন্ত্র || HSC Biology || Roots Of Biology",
     youtubeId: "https://youtu.be/Pf-DBOu2s3k?si=2exLW-H0ZDzKng37",
-    thumbnail: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=800&auto=format&fit=crop",
+    thumbnail: "/youtobepic2.jpeg", // 👈 সরাসরি public ফোল্ডারের পাথ
     channelName: "Roots Of Biology",
   },
 ];
