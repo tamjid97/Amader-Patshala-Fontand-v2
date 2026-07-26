@@ -212,3 +212,15 @@
     animation: none !important;
   }
 }
+
+/* Swiper Pagination Customization for Green Theme */
+.custom-swiper-pagination .swiper-pagination-bullet {
+  background: #10b981 !important;
+  opacity: 0.5;
+}
+.custom-swiper-pagination .swiper-pagination-bullet-active {
+  opacity: 1;
+  width: 24px;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}

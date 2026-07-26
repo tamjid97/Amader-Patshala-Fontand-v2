@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { Check, Package, Sparkles, X } from 'lucide-react'
 import type { BatchFeature } from '@/lib/batch-features'
-
 
 type FeatureModalProps = {
   feature: BatchFeature
@@ -32,70 +32,77 @@ export function FeatureModal({ feature, onClose }: FeatureModalProps) {
   }, [onClose])
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-xl p-4 sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="feature-modal-title"
+      onClick={onClose}
     >
-      <button
-        type="button"
-        aria-label="বন্ধ করুন"
-        onClick={onClose}
-        className="animate-in fade-in absolute inset-0 cursor-default bg-ink/70 backdrop-blur-md duration-200"
-      />
-
-      <div className="animate-in fade-in zoom-in-95 slide-in-from-bottom-4 relative w-full max-w-lg overflow-hidden rounded-3xl border border-background/70 bg-background/92 shadow-2xl backdrop-blur-2xl duration-300 sm:max-w-2xl">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: 40 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 40 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 400 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] bg-white p-6 sm:p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] dark:bg-[#071a13] border border-emerald-100 dark:border-emerald-800/50"
+      >
+        {/* Decorative Background Glow */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 -top-24 h-48 bg-amber-from/50 blur-3xl"
+          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-48 w-full max-w-md bg-emerald-400/20 blur-[80px] rounded-full"
         />
 
-        <div className="relative max-h-[80vh] overflow-y-auto p-6 sm:p-8">
-          <div className="flex items-start gap-4">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-from to-amber-to text-ink shadow-md">
-              <Icon className="size-6" aria-hidden="true" />
+        <div className="relative z-10 max-h-[80vh] overflow-y-auto custom-scrollbar pr-2">
+          {/* Header Area */}
+          <div className="flex items-start gap-5">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/20 text-emerald-600 dark:text-emerald-400 shadow-inner border border-emerald-200/50 dark:border-emerald-800/50">
+              <Icon className="h-7 w-7" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
               <h3
                 id="feature-modal-title"
-                className="text-xl leading-relaxed font-bold text-brand text-balance sm:text-2xl"
+                className="text-2xl leading-relaxed font-extrabold text-slate-800 dark:text-emerald-50 text-balance"
               >
                 {feature.title}
               </h3>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400 mt-1">
                 {feature.subtitle}
               </p>
             </div>
+            {/* Close Button */}
             <button
               ref={closeRef}
               type="button"
               onClick={onClose}
               aria-label="বন্ধ করুন"
-              className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/60 text-foreground transition-colors hover:bg-brand hover:text-brand-foreground focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition-all duration-300 hover:bg-red-50 hover:text-red-500 hover:rotate-90 dark:bg-emerald-900/40 dark:text-emerald-400 dark:hover:bg-red-950/40 dark:hover:text-red-400 border border-transparent hover:border-red-200 dark:hover:border-red-900/50 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
             >
-              <X className="size-4" aria-hidden="true" />
+              <X className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
 
-          <p className="mt-5 leading-relaxed text-foreground/80">
+          <p className="mt-6 text-[15px] sm:text-base leading-relaxed text-slate-600 dark:text-emerald-100/80 text-justify">
             {feature.description}
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-border/60 bg-brand-soft/70 p-4">
-              <h4 className="flex items-center gap-2 text-sm font-semibold text-brand">
-                <Sparkles className="size-4" aria-hidden="true" />
+          <div className="mt-8 grid gap-5 sm:grid-cols-2">
+            {/* মূল সুবিধা Box */}
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5 shadow-sm dark:bg-emerald-950/20 dark:border-emerald-800/50">
+              <h4 className="flex items-center gap-2 text-[15px] font-bold text-emerald-700 dark:text-emerald-400">
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
                 মূল সুবিধা
               </h4>
-              <ul className="mt-3 flex flex-col gap-2">
+              <ul className="mt-4 flex flex-col gap-3">
                 {feature.benefits.map((benefit) => (
                   <li
                     key={benefit}
-                    className="flex items-start gap-2 text-sm leading-relaxed text-foreground/80"
+                    className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-emerald-100/90 font-medium"
                   >
                     <Check
-                      className="mt-1 size-4 shrink-0 text-brand"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
                       aria-hidden="true"
                     />
                     <span>{benefit}</span>
@@ -104,20 +111,21 @@ export function FeatureModal({ feature, onClose }: FeatureModalProps) {
               </ul>
             </div>
 
-            <div className="rounded-2xl border border-border/60 bg-background/60 p-4">
-              <h4 className="flex items-center gap-2 text-sm font-semibold text-brand">
-                <Package className="size-4" aria-hidden="true" />
+            {/* যা যা থাকছে Box */}
+            <div className="rounded-2xl border border-emerald-100 bg-white p-5 shadow-sm dark:bg-[#05130e] dark:border-emerald-800/50">
+              <h4 className="flex items-center gap-2 text-[15px] font-bold text-emerald-700 dark:text-emerald-400">
+                <Package className="h-4 w-4" aria-hidden="true" />
                 যা যা থাকছে
               </h4>
-              <ul className="mt-3 flex flex-col gap-2">
+              <ul className="mt-4 flex flex-col gap-3">
                 {feature.includes.map((item) => (
                   <li
                     key={item}
-                    className="flex items-start gap-2 text-sm leading-relaxed text-foreground/80"
+                    className="flex items-start gap-2.5 text-sm leading-relaxed text-slate-700 dark:text-emerald-100/90 font-medium"
                   >
                     <span
                       aria-hidden="true"
-                      className="mt-1.5 size-1.5 shrink-0 rounded-full bg-amber-to"
+                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-500"
                     />
                     <span>{item}</span>
                   </li>
@@ -126,16 +134,17 @@ export function FeatureModal({ feature, onClose }: FeatureModalProps) {
             </div>
           </div>
 
+          {/* Bottom Close Button */}
           <button
             type="button"
             onClick={onClose}
-            className="mt-7 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand px-6 py-3 text-base font-semibold text-brand-foreground shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:outline-none"
+            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3.5 text-[15px] font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] hover:shadow-emerald-500/50 active:scale-95 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:outline-none dark:focus-visible:ring-offset-[#071a13]"
           >
-            <X className="size-4" aria-hidden="true" />
+            <X className="h-4 w-4" aria-hidden="true" />
             বন্ধ করুন
           </button>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
