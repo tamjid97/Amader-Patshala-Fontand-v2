@@ -17,7 +17,7 @@ export default function Footer() {
                 <Dna className="size-5" />
               </span>
               <span className="text-lg font-extrabold tracking-tight text-emerald-950 transition-colors duration-300 group-hover:text-emerald-700 dark:text-emerald-50 dark:group-hover:text-emerald-300">
-                আমাদের পাঠশালা
+                Roots Of Biology
               </span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-emerald-900/70 dark:text-emerald-300/70">

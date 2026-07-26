@@ -36,7 +36,7 @@ export default function BannerCard() {
 
   if (loading) {
     return (
-      <div className="w-full sm:max-w-7xl sm:mx-auto sm:px-4 mt-0 mb-6 h-48 md:h-[400px] flex items-center justify-center text-emerald-700 bg-emerald-50/50 ">
+      <div className="w-full sm:max-w-7xl sm:mx-auto sm:px-4 mt-0 mb-6 h-48 md:h-[400px] flex items-center justify-center text-emerald-700 bg-emerald-50/50">
         লোডিং হচ্ছে...
       </div>
     );
@@ -48,14 +48,18 @@ export default function BannerCard() {
 
   return (
     <div className="w-full sm:max-w-7xl sm:mx-auto sm:px-6 lg:px-8 mt-0 mb-6">
-      <div className="w-full  overflow-hidden shadow-none sm:shadow-lg bg-white dark:bg-gray-900 border-0 sm:border border-gray-100 dark:border-gray-800">
+      <div className="w-full overflow-hidden shadow-none sm:shadow-lg bg-white dark:bg-gray-900 border-0 sm:border border-gray-100 dark:border-gray-800">
         <Swiper
-          pagination={{ clickable: true }}
+          // স্লাইড সংখ্যা ১টির বেশি হলে লুপ অন হবে, কম থাকলে অফ থাকবে (ওয়ার্নিং আসবে না)
+          loop={banners.length > 1}
           autoplay={{
             delay: 3500,
             disableOnInteraction: false,
           }}
+          pagination={{ clickable: true }}
           modules={[Pagination, Autoplay]}
+          observer={true}
+          observeParents={true}
           className="w-full mySwiper"
         >
           {banners.map((item, index) => (

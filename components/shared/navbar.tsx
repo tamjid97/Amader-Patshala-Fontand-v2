@@ -95,6 +95,7 @@ function ModeToggle() {
 }
 
 // 🌟 Framer Motion থ্রি-ডি লোগো এবং স্পিন ইফেক্ট 🌟
+// 🌟 Framer Motion থ্রি-ডি লোগো এবং স্পিন ইফেক্ট 🌟
 function BrandLogo() {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -133,6 +134,7 @@ function BrandLogo() {
         }}
         className="flex items-center gap-2.5 px-2 py-1 rounded-xl cursor-pointer group"
       >
+        {/* 🧬 DNA আইকন যা মাউস নিলে ৩৬০ ডিগ্রি ঘুরবে (spin) */}
         <motion.span 
           style={{ translateZ: 40 }} 
           whileHover={{ scale: 1.15, rotate: 360 }}
@@ -142,11 +144,12 @@ function BrandLogo() {
           <Dna className="size-5" />
         </motion.span>
         
+        {/* টেক্সট অংশ */}
         <motion.span 
-          style={{ translateZ: 20 }}
+          style={{ translateZ: 20 }} 
           className="text-lg font-extrabold tracking-tight text-emerald-950 dark:text-emerald-50 drop-shadow-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-300"
         >
-          আমাদের পাঠশালা
+          Roots Of Biology
         </motion.span>
       </motion.div>
     </Link>
