@@ -97,7 +97,7 @@ export default function Footer() {
               rel="noopener noreferrer"
               className="font-bold text-emerald-700 transition-all hover:text-emerald-950 hover:underline dark:text-emerald-400 dark:hover:text-emerald-100"
             >
-              Tamjid Hossain Epick
+              S M Tamjid Hossain Epick
             </Link>
           </div>
 

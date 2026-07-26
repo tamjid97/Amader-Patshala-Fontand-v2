@@ -7,10 +7,8 @@ import { useTheme } from "next-themes"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import {
   Bell,
-
   LogOut,
   Menu,
-
   User,
   Sun,
   Moon,
@@ -95,7 +93,6 @@ function ModeToggle() {
 }
 
 // 🌟 Framer Motion থ্রি-ডি লোগো এবং স্পিন ইফেক্ট 🌟
-// 🌟 Framer Motion থ্রি-ডি লোগো এবং স্পিন ইফেক্ট 🌟
 function BrandLogo() {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -134,7 +131,6 @@ function BrandLogo() {
         }}
         className="flex items-center gap-2.5 px-2 py-1 rounded-xl cursor-pointer group"
       >
-        {/* 🧬 DNA আইকন যা মাউস নিলে ৩৬০ ডিগ্রি ঘুরবে (spin) */}
         <motion.span 
           style={{ translateZ: 40 }} 
           whileHover={{ scale: 1.15, rotate: 360 }}
@@ -144,7 +140,6 @@ function BrandLogo() {
           <Dna className="size-5" />
         </motion.span>
         
-        {/* টেক্সট অংশ */}
         <motion.span 
           style={{ translateZ: 20 }} 
           className="text-lg font-extrabold tracking-tight text-emerald-950 dark:text-emerald-50 drop-shadow-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-300 transition-colors duration-300"
@@ -159,27 +154,40 @@ function BrandLogo() {
 function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) {
   const profilePic = user?.data?.profilePicture || undefined;
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
-  const router = useRouter(); // 👈 রাউটার হুক যুক্ত করা হয়েছে
+  const router = useRouter(); 
+
+  // 🌟 ইউজারের Role অনুযায়ী সঠিক Dashboard Path নির্ধারণ
+  const role = user?.data?.role?.toUpperCase();
+  let dashboardPath = "/sttudent_dashboard"; // Default (Student)
+
+  if (role === "ADMIN") {
+    dashboardPath = "/admin_dashbord";
+  } else if (role === "MODERATOR") {
+    dashboardPath = "/moderator_dashbord";
+  }
+
+  // 🌟 Dynamic href সহ menuItems
+  const menuItems = [
+    { label: "View Profile", icon: User, href: "/profile" },
+    { label: "Dashboard", icon: LayoutDashboard, href: dashboardPath },
+    { label: "Notifications", icon: Bell, href: "/notifications" },
+  ];
 
   return user?.success ? (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full ring-2 ring-emerald-600/30 dark:ring-emerald-400/30 hover:ring-emerald-600 transition-all hover:shadow-[0_0_10px_rgba(5,150,105,0.4)]"
-            aria-label="Open profile menu"
-          >
-            <Avatar className="size-9">
-              <AvatarImage src={profilePic} alt={user?.data?.name || "User"} />
-              <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
-                {initial}
-              </AvatarFallback>
-            </Avatar>
-          </Button>
-        }
-      />
+      <DropdownMenuTrigger asChild>
+        <button
+          className="relative flex items-center justify-center rounded-full ring-2 ring-emerald-600/30 dark:ring-emerald-400/30 hover:ring-emerald-600 transition-all hover:shadow-[0_0_10px_rgba(5,150,105,0.4)] focus:outline-none cursor-pointer"
+          aria-label="Open profile menu"
+        >
+          <Avatar className="size-9">
+            <AvatarImage src={profilePic} alt={user?.data?.name || "User"} />
+            <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
+              {initial}
+            </AvatarFallback>
+          </Avatar>
+        </button>
+      </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-64 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-[#030a08] shadow-xl">
         <div className="flex items-center gap-3 p-2">
           <Avatar className="size-10 shadow-sm">
@@ -200,7 +208,6 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
         <DropdownMenuSeparator className="bg-emerald-200 dark:bg-emerald-800/60" />
         <DropdownMenuGroup>
           {menuItems.map((item) => (
-            // 👈 asChild এবং Link বাদ দিয়ে onClick ব্যবহার করা হয়েছে
             <DropdownMenuItem 
               key={item.label} 
               onClick={() => router.push(item.href)} 
@@ -248,18 +255,16 @@ export function Navbar({ user }: NavbarProps) {
         <div className="flex items-center gap-2">
           {/* Mobile Menu */}
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="md:hidden hover:bg-emerald-300/40 dark:hover:bg-emerald-900/40 text-emerald-950 dark:text-emerald-100"
-                  aria-label="Open navigation menu"
-                >
-                  <Menu />
-                </Button>
-              }
-            />
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden hover:bg-emerald-300/40 dark:hover:bg-emerald-900/40 text-emerald-950 dark:text-emerald-100"
+                aria-label="Open navigation menu"
+              >
+                <Menu />
+              </Button>
+            </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0 border-r-emerald-200 dark:border-r-emerald-900 bg-emerald-50 dark:bg-[#030a08]">
               <SheetHeader className="border-b border-emerald-200 dark:border-emerald-900/60 p-4">
                 <SheetTitle className="sr-only">Navigation menu</SheetTitle>
