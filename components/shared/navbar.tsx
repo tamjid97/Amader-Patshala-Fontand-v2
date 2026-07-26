@@ -65,7 +65,7 @@ type NavbarProps = {
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Batch Time", href: "/batchTime" },
-  { label: "Books", href: "/allBook" },
+  { label: "Material", href: "/allBook" },
   { label: "Result", href: "/result" },
 ]
 

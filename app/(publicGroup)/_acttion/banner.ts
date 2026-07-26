@@ -2,8 +2,8 @@
 
 export async function getBanners() {
   try {
-    const res = await fetch("http://localhost:5000/api/banners", {
-      cache: "no-store",
+    const res = await fetch(`${process.env.BACKEND_API_URL}/api/banners`, {
+      cache: "no-store", // সবসময় ফ্রেশ ডাটা পাওয়ার জন্য
     });
 
     if (!res.ok) {
@@ -11,10 +11,6 @@ export async function getBanners() {
     }
 
     const data = await res.json();
-    
-    // ডেটা যদি সরাসরি অ্যারে হয় তবে সেটাই রিটার্ন করবে, 
-    // আর যদি অবজেক্টের ভেতরে থাকে (যেমন: data.banners বা data.data) তবে সেটি রিটার্ন করতে হবে।
-    // আপনার ব্যাকএন্ড যদি সরাসরি অ্যারে দেয় তবে নিচে শুধু `data` রিটার্ন করলেই হবে।
     return Array.isArray(data) ? data : (data.banners || data.data || []);
   } catch (error) {
     console.error("Error fetching banners:", error);
