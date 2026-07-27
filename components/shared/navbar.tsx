@@ -164,7 +164,7 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
   const menuItems = [
     { label: "View Profile", icon: User, href: "/profile" },
     { label: "Dashboard", icon: LayoutDashboard, href: dashboardPath },
-    { label: "Notifications", icon: Bell, href: "/notifications" },
+    { label: "Notifications", icon: Bell, href: "/coming-soon" },
   ];
 
   return user?.success ? (

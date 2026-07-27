@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React from "react";
 import { motion } from "framer-motion";
@@ -10,7 +10,6 @@ import { HeartHandshake } from "lucide-react";
 import "swiper/css";
 
 export default function Extrasection() {
-  // সাময়িক ডেমো ছবি (API যুক্ত করার পর এই অ্যারেতে API-এর ডাটা বসাতে পারবেন)
   const extraImages = [
     "/sir 1.jpeg",
     "/sir2.jpg",
@@ -23,146 +22,155 @@ export default function Extrasection() {
   ];
 
   return (
-    <section className="relative w-full overflow-hidden py-16 md:py-24 transition-colors duration-300">
+    <section className="relative w-full overflow-hidden py-12 md:py-20 transition-colors duration-300">
       
       {/* 🌟 Background Decorative Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] bg-emerald-400/10 dark:bg-emerald-900/15 blur-[130px] rounded-full -z-10 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[70%] bg-emerald-400/10 dark:bg-emerald-900/15 blur-[130px] rounded-full -z-10 pointer-events-none" />
 
-      <div className="container mx-auto px-4 relative z-10 max-w-7xl">
+      {/* 🌟 Section Title */}
+      <div className="w-full px-4 mb-10 text-center flex flex-col items-center relative z-10">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm font-semibold mb-3 shadow-sm"
+        >
+          <HeartHandshake className="w-4 h-4 text-emerald-500" />
+          <span>সামাজিক দায়বদ্ধতা</span>
+        </motion.div>
+
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="text-3xl md:text-5xl font-extrabold text-[#0a7c41] dark:text-emerald-400 drop-shadow-sm pb-1"
+        >
+          সমাজের জন্য আমাদের উদ্যোগ
+        </motion.h2>
         
-        {/* 🌟 Section Title */}
-        <div className="mb-14 text-center flex flex-col items-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-sm font-semibold mb-3 shadow-sm"
-          >
-            <HeartHandshake className="w-4 h-4 text-emerald-500" />
-            <span>সামাজিক দায়বদ্ধতা</span>
-          </motion.div>
-
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-3xl md:text-5xl font-extrabold text-[#0a7c41] dark:text-emerald-400 drop-shadow-sm pb-1"
-          >
-            সমাজের জন্য আমাদের উদ্যোগ
-          </motion.h2>
-          
-          {/* গ্রিন গ্র্যাডিয়েন্ট আন্ডারলাইন */}
-          <motion.div 
-            initial={{ opacity: 0, scaleX: 0 }}
-            whileInView={{ opacity: 1, scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="h-1.5 w-40 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 mt-3 shadow-[0_2px_10px_rgba(16,185,129,0.5)] origin-center"
-          />
-        </div>
-
-        {/* 🌟 Top Row - Right to Left Slider */}
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
+        {/* গ্রিন গ্র্যাডিয়েন্ট আন্ডারলাইন */}
+        <motion.div 
+          initial={{ opacity: 0, scaleX: 0 }}
+          whileInView={{ opacity: 1, scaleX: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="mb-8"
-        >
-          <Swiper
-            spaceBetween={20}
-            slidesPerView={1}
-            loop={true}
-            autoplay={{
-              delay: 0,
-              disableOnInteraction: false,
-              reverseDirection: true, // ডান থেকে বামে স্ক্রোল হবে
-            }}
-            speed={4500}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              768: { slidesPerView: 3 },
-              1024: { slidesPerView: 4 },
-            }}
-            modules={[Autoplay]}
-            className="py-2"
-          >
-            {extraImages.map((img, idx) => (
-              <SwiperSlide key={idx}>
-                <div className="relative group overflow-hidden rounded-[1.5rem] bg-white/90 p-2 backdrop-blur-sm dark:bg-[#05130e]/90 shadow-[0_10px_30px_-10px_rgba(4,120,87,0.15)] border border-emerald-100/60 dark:border-emerald-900/50">
-                  <div className="relative w-full h-52 overflow-hidden rounded-[1.2rem]">
-                    <Image
-                      src={img}
-                      alt={`Extra Initiative ${idx + 1}`}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </motion.div>
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="h-1.5 w-40 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 mt-3 shadow-[0_2px_10px_rgba(16,185,129,0.5)] origin-center"
+        />
+      </div>
 
-        {/* 🌟 Bottom Row - Left to Right Slider */}
-        <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <Swiper
-            spaceBetween={20}
-            slidesPerView={1}
-            loop={true}
-            autoplay={{
-              delay: 0,
-              disableOnInteraction: false,
-            }}
-            speed={4500}
-            breakpoints={{
-              640: { slidesPerView: 2 },
-              768: { slidesPerView: 3 },
-              1024: { slidesPerView: 4 },
-            }}
-            modules={[Autoplay]}
-            className="py-2"
-          >
-            {extraImages.map((img, idx) => (
-              <SwiperSlide key={idx}>
-                <div className="relative group overflow-hidden rounded-[1.5rem] bg-white/90 p-2 backdrop-blur-sm dark:bg-[#05130e]/90 shadow-[0_10px_30px_-10px_rgba(4,120,87,0.15)] border border-emerald-100/60 dark:border-emerald-900/50">
-                  <div className="relative w-full h-52 overflow-hidden rounded-[1.2rem]">
-                    <Image
-                      src={img}
-                      alt={`Extra Initiative ${idx + 1}`}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </motion.div>
-
-        {/* 🌟 Bottom Inspirational Quote */}
+      {/* 🌟 Full Screen Width Slider Grid */}
+      <div className="w-full relative z-10 space-y-4 md:space-y-5">
+        
+        {/* 🌟 Top Row - Right to Left Scroll */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          className="mt-14 text-center"
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="w-full"
         >
-          <p className="inline-block px-6 py-3 rounded-full bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-base md:text-lg font-semibold shadow-sm">
-            ✨ আমাদের বিশ্বাস, ভালো ফলাফলের পাশাপাশি ভালো মানুষ হওয়াটাই প্রকৃত শিক্ষা।
-          </p>
+          <Swiper
+            spaceBetween={14}
+            slidesPerView={1.15}
+            loop={true}
+            autoplay={{
+              delay: 0,
+              disableOnInteraction: false,
+              reverseDirection: true,
+            }}
+            speed={7500}
+            breakpoints={{
+              480: { slidesPerView: 1.5, spaceBetween: 16 },
+              768: { slidesPerView: 2.2, spaceBetween: 18 },
+              1024: { slidesPerView: 2.8, spaceBetween: 20 },
+              1280: { slidesPerView: 3.3, spaceBetween: 22 },
+              1536: { slidesPerView: 3.6, spaceBetween: 24 },
+            }}
+            modules={[Autoplay]}
+            className="w-full !ease-linear [&_.swiper-wrapper]:!ease-linear"
+          >
+            {extraImages.map((img, idx) => (
+              <SwiperSlide key={idx}>
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm bg-slate-100 dark:bg-emerald-950/20">
+                  <div className="relative w-full aspect-[16/9] overflow-hidden">
+                    <Image
+                      src={img}
+                      alt={`Social Initiative ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-300" />
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </motion.div>
+
+        {/* 🌟 Bottom Row - Left to Right Scroll */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="w-full"
+        >
+          <Swiper
+            spaceBetween={14}
+            slidesPerView={1.15}
+            loop={true}
+            autoplay={{
+              delay: 0,
+              disableOnInteraction: false,
+            }}
+            speed={7500}
+            breakpoints={{
+              480: { slidesPerView: 1.5, spaceBetween: 16 },
+              768: { slidesPerView: 2.2, spaceBetween: 18 },
+              1024: { slidesPerView: 2.8, spaceBetween: 20 },
+              1280: { slidesPerView: 3.3, spaceBetween: 22 },
+              1536: { slidesPerView: 3.6, spaceBetween: 24 },
+            }}
+            modules={[Autoplay]}
+            className="w-full !ease-linear [&_.swiper-wrapper]:!ease-linear"
+          >
+            {extraImages.map((img, idx) => (
+              <SwiperSlide key={idx}>
+                <div className="relative group overflow-hidden rounded-2xl shadow-sm bg-slate-100 dark:bg-emerald-950/20">
+                  <div className="relative w-full aspect-[16/9] overflow-hidden">
+                    <Image
+                      src={img}
+                      alt={`Social Initiative ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors duration-300" />
+                  </div>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </motion.div>
 
       </div>
+
+      {/* 🌟 Bottom Quote */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="mt-12 text-center px-4 relative z-10"
+      >
+        <p className="inline-block px-6 py-3 rounded-full bg-emerald-500/10 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 text-base md:text-lg font-semibold shadow-sm">
+          ✨ আমাদের বিশ্বাস, ভালো ফলাফলের পাশাপাশি ভালো মানুষ হওয়াটাই প্রকৃত শিক্ষা।
+        </p>
+      </motion.div>
+
     </section>
   );
 }
