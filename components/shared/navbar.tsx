@@ -158,7 +158,7 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
 
   // 🌟 ইউজারের Role অনুযায়ী সঠিক Dashboard Path নির্ধারণ
   const role = user?.data?.role?.toUpperCase();
-  let dashboardPath = "/sttudent_dashboard"; // Default (Student)
+  let dashboardPath = "/user_dashboard"; // Default (Student)
 
   if (role === "ADMIN") {
     dashboardPath = "/admin_dashbord";

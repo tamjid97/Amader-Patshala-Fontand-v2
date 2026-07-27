@@ -52,17 +52,16 @@ if(result.success){
   });
 
 
-  const decodedToken = jwt.decode(result.data.accessToken) as JwtPayload;
+const decodedToken = jwt.decode(result.data.accessToken) as JwtPayload;
 
-        if(decodedToken.role === "USER"){
-            redirect("/dashboard");
-        } else if (decodedToken.role === "ADMIN"){
-            redirect("/admin-dashboard");
-        } else if (decodedToken.role === "AUTHOR"){
-            redirect("/author-dashboard");
-        }
-    }
-
+if (decodedToken.role === "USER" || decodedToken.role === "STUDENT") {
+    redirect("/user_dashboard"); 
+} else if (decodedToken.role === "ADMIN") {
+    redirect("/admin_dashbord"); 
+} else if (decodedToken.role === "MODERATOR") {
+    redirect("/moderator_dashbord");
+}
+}
 
 
 

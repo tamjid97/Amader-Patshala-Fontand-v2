@@ -41,29 +41,23 @@ export const ADMIN_SIDEBAR_ITEMS: ISidebarItem[] = [
     }
 ];
 
-const AUTHOR_SIDEBAR_ITEMS: ISidebarItem[] = [
-    {
-        label: "Dashboard",
-        href: "/author-dashboard",
-        icon: LayoutDashboard
-    },
-    {
-        label: "My Posts",
-        href: "/author-dashboard/my-posts",
-        icon: FileText
-    },
-]
+
 
 const USER_SIDEBAR_ITEMS : ISidebarItem[] = [
     {
         label : "Dashboard",
-        href : "/sttudent_dashboard",
+        href : "/user_dashboard",
         icon : LayoutDashboard
     },
     {
-        label : "My Posts",
-        href : "/sttudent_dashboard/my-posts",
-        icon : FileText
+        label : "Request Student",
+        href : "/user_dashboard/request-student",
+        icon : UserCheck
+    },
+    {
+        label : "Request Moderator",
+        href : "/user_dashboard/request-moderator",
+        icon : ShieldPlus
     },
 ]
 
@@ -107,7 +101,6 @@ export const MODERATOR_SIDEBAR_ITEMS: ISidebarItem[] = [
 
 export const sidebarMenuItems = {
     USER : USER_SIDEBAR_ITEMS,
-    AUTHOR : AUTHOR_SIDEBAR_ITEMS,
     MODERATOR : MODERATOR_SIDEBAR_ITEMS, 
     ADMIN : ADMIN_SIDEBAR_ITEMS
 }
