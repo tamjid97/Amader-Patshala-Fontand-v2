@@ -1,20 +1,19 @@
 "use client";
 
-import { useState } from "react";
-
-import { RegisterAction } from "../_action/registerAction";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { 
   Eye, EyeOff, User, Phone, 
   School, GraduationCap, Dna, Lock, Camera 
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useFormStatus } from "react-dom";
+import { registerUser } from "../_action/registerAction";
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
@@ -22,32 +21,54 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300 } },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { type: "spring", stiffness: 300 } 
+  },
 };
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+  return (
+    <Button 
+      type="submit" 
+      disabled={pending}
+      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
+    >
+      {pending ? "Creating Account..." : "Register"}
+    </Button>
+  );
+}
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  
-  const [state, formAction, isPending] = useActionState(RegisterAction, null);
-
-  const handleImageChange = (e) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
+  const initialState = {
+    success: false,
+    statusCode: 200,
+    message: "",
+    data: {},
+  };
+
+  const [state, formAction] = useActionState(registerUser, initialState);
+
   return (
     <div className="relative flex min-h-[85vh] w-full items-center justify-center overflow-hidden p-4 md:p-8">
-      
       
       <div className="pointer-events-none absolute right-1/4 top-1/4 h-72 w-72 rounded-full bg-emerald-500/20 blur-[120px]" />
       <div className="pointer-events-none absolute bottom-1/4 left-1/4 h-72 w-72 rounded-full bg-cyan-500/20 blur-[120px]" />
@@ -78,10 +99,20 @@ export default function RegisterForm() {
             </p>
           </div>
 
-          
           <form action={formAction} className="p-8 pt-4">
             
-            
+            {/* Status Message Display */}
+            {state?.message && (
+              <div className={`mb-4 rounded-xl p-3 text-center text-sm font-medium ${
+                state.success 
+                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" 
+                  : "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300"
+              }`}>
+                {state.message}
+              </div>
+            )}
+
+            {/* Profile Image Input */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -155,7 +186,7 @@ export default function RegisterForm() {
                   <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500" />
                   <Input
                     id="phoneNumber"
-                    name="phone"
+                    name="phoneNumber"
                     type="tel"
                     placeholder="01XXXXXXXXX"
                     required
@@ -229,27 +260,9 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              
-              <input type="hidden" name="role" value="USER" />
-
               {/* Submit Button */}
               <motion.div variants={itemVariants} className="pt-2 md:col-span-2">
-                <Button
-                  type="submit"
-                  disabled={isPending} 
-                  className="group w-full rounded-xl bg-emerald-600 py-6 text-base font-medium transition-all hover:bg-emerald-700 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] dark:bg-emerald-600 dark:hover:bg-emerald-500"
-                >
-                  <span className="flex items-center justify-center">
-                    {isPending ? "Registering..." : "Register Now"}
-                    <motion.span
-                      className="ml-2 inline-block opacity-0 transition-opacity group-hover:opacity-100"
-                      initial={{ x: -10 }}
-                      animate={{ x: 0 }}
-                    >
-                      →
-                    </motion.span>
-                  </span>
-                </Button>
+                <SubmitButton />
               </motion.div>
 
             </motion.div>
