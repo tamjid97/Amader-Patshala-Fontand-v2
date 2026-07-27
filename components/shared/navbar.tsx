@@ -67,12 +67,6 @@ const navLinks = [
   { label: "Result", href: "/result" },
 ]
 
-const menuItems = [
-  { label: "View Profile", icon: User, href: "/profile" },
-  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Notifications", icon: Bell, href: "/notifications" },
-]
-
 // 🌟 প্রফেশনাল এবং ইউনিক থিম টগল বাটন 🌟
 function ModeToggle() {
   const { setTheme, resolvedTheme } = useTheme()
@@ -156,7 +150,7 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
   const router = useRouter(); 
 
-  // 🌟 ইউজারের Role অনুযায়ী সঠিক Dashboard Path নির্ধারণ
+  // 🌟 ইউজারের Role অনুযায়ী সঠিক Dashboard Path নির্ধারণ
   const role = user?.data?.role?.toUpperCase();
   let dashboardPath = "/user_dashboard"; // Default (Student)
 
@@ -175,19 +169,19 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
 
   return user?.success ? (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          className="relative flex items-center justify-center rounded-full ring-2 ring-emerald-600/30 dark:ring-emerald-400/30 hover:ring-emerald-600 transition-all hover:shadow-[0_0_10px_rgba(5,150,105,0.4)] focus:outline-none cursor-pointer"
-          aria-label="Open profile menu"
-        >
-          <Avatar className="size-9">
-            <AvatarImage src={profilePic} alt={user?.data?.name || "User"} />
-            <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
-        </button>
+      {/* 🛠️ FIxed: asChild এবং ভেতরের <button> বাদ দিয়ে সরাসরি DropdownMenuTrigger-এ স্টাইল যোগ করা হয়েছে */}
+      <DropdownMenuTrigger
+        className="relative flex items-center justify-center rounded-full ring-2 ring-emerald-600/30 dark:ring-emerald-400/30 hover:ring-emerald-600 transition-all hover:shadow-[0_0_10px_rgba(5,150,105,0.4)] focus:outline-none cursor-pointer"
+        aria-label="Open profile menu"
+      >
+        <Avatar className="size-9">
+          <AvatarImage src={profilePic} alt={user?.data?.name || "User"} />
+          <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
+            {initial}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent align="end" sideOffset={8} className="w-64 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-[#030a08] shadow-xl">
         <div className="flex items-center gap-3 p-2">
           <Avatar className="size-10 shadow-sm">
