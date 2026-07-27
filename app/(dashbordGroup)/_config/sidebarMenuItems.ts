@@ -6,21 +6,40 @@ import {
   MessageSquare, 
   Image as ImageIcon, 
   Clock, 
-  UploadCloud
+  UploadCloud,
+  Users,
+  UserCheck,
+  ShieldPlus,
+  UserX
 } from "lucide-react"
 
 export const ADMIN_SIDEBAR_ITEMS: ISidebarItem[] = [
     {
-        label : "Admin Dashboard",
-        href : "/admin_dashboard",
-        icon : LayoutDashboard
+        label: "Admin Dashboard",
+        href: "/admin_dashbord",
+        icon: LayoutDashboard
     },
     {
-        label : "My Posts",
-        href : "/admin_dashboard/my-posts",
-        icon : FileText
+        label: "All Users",
+        href: "/admin_dashbord/allUser",
+        icon: Users
     },
-]
+    {
+        label: "Student Approvals",
+        href: "/admin_dashbord/syudent",
+        icon: UserCheck 
+    },
+    {
+        label: "Manage Moderators",
+        href: "/admin_dashbord/modarator",
+        icon: ShieldPlus 
+    },
+    {
+        label: "Banned Users",
+        href: "/admin_dashbord/bannedUser",
+        icon: UserX 
+    }
+];
 
 const AUTHOR_SIDEBAR_ITEMS: ISidebarItem[] = [
     {
