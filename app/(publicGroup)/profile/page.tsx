@@ -1,16 +1,16 @@
-import { UserProfile } from "@/components/ui/userProfile"
 
+import { UserProfile } from "@/components/ui/userProfile";
+import { getMe } from "../_acttion/profile";
 
-export const metadata = {
-  title: 'User Profile',
-  description: 'Manage your profile information',
-}
+export default async function ProfilePage() {
+  const profileData = await getMe();
+  
+  // কনসোল করে টার্মিনালে চেক করুন কী ডেটা আসছে
+  console.log("SERVER PROFILE DATA:", profileData);
 
-export default function ProfilePage() {
   return (
     <main>
-  
-      <UserProfile />
+      <UserProfile initialData={profileData} />
     </main>
-  )
+  );
 }

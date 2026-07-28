@@ -1,39 +1,81 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Camera, Edit2, Save, X, Mail, Phone, BookOpen, Building2, UserCircle, Sparkles } from 'lucide-react'
+import { Camera, Edit2, Save, X, Mail, Phone, BookOpen, Building2, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 
-interface UserProfileData {
+export interface BackendUserPayload {
   id: string
   name: string
-  email: string
-  phone: string
+  phoneNumber: string
+  email: string | null
+  profilePicture: string | null
   class: string
   institute: string
   role: string
-  avatarUrl: string
+  createdAt?: string
+  updatedAt?: string
+  isApproved?: string
+  status?: string
 }
 
-export function UserProfile() {
+export interface ApiResponse {
+  success: boolean
+  statusCode: number
+  message: string
+  data: BackendUserPayload
+}
+
+interface UserProfileProps {
+  initialData?: ApiResponse | BackendUserPayload | null
+  onUpdateAction?: (data: Partial<BackendUserPayload>) => Promise<unknown>
+}
+
+// সেফলি ডাটা এক্সট্রাক্ট করার ফাংশন
+const extractUserInfo = (data: ApiResponse | BackendUserPayload | null | undefined): BackendUserPayload => {
+  if (!data) {
+    return {
+      id: '',
+      name: 'User',
+      phoneNumber: 'N/A',
+      email: null,
+      profilePicture: null,
+      class: 'N/A',
+      institute: 'N/A',
+      role: 'STUDENT'
+    }
+  }
+  if ('data' in data && data.data) {
+    return data.data
+  }
+  return data as BackendUserPayload
+}
+
+export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isEditMode, setIsEditMode] = useState(false)
   const [profileImage, setProfileImage] = useState<string | null>(null)
-  
-  const [userData, setUserData] = useState<UserProfileData>({
-    id: '1',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@university.edu',
-    phone: '+880 1700-000000',
-    class: 'HSC - Batch 2026',
-    institute: 'Roots Of Biology',
-    role: 'Student',
-    avatarUrl: '',
-  })
+  const [isLoading, setIsLoading] = useState(false)
 
-  const [editData, setEditData] = useState<Partial<UserProfileData>>(userData)
+  // লেটেস্ট ইউজার ইনফো বের করে নেওয়া
+  const userInfo = extractUserInfo(initialData)
+
+  const [userData, setUserData] = useState<BackendUserPayload>(userInfo)
+  const [editData, setEditData] = useState<Partial<BackendUserPayload>>(userInfo)
+
+  // 🌟 Navbar-এর মতো প্রোফাইল পিকচার পাথ ফরম্যাট করার লজিক 🌟
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:5000";
+  
+  const formatProfilePic = (picPath: string | null) => {
+    if (!picPath) return null;
+    if (picPath.startsWith("http://") || picPath.startsWith("https://") || picPath.startsWith("data:image/")) {
+      return picPath;
+    }
+    const cleanPath = picPath.replace(/\\/g, "/");
+    return `${BACKEND_URL}/${cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath}`;
+  };
 
   const handleEditClick = () => {
     setEditData(userData)
@@ -42,18 +84,40 @@ export function UserProfile() {
 
   const handleCancel = () => {
     setIsEditMode(false)
+    setProfileImage(null)
+    setEditData(userData)
   }
 
-  const handleSave = () => {
-    setUserData({
-      ...userData,
-      ...editData,
-      avatarUrl: profileImage || userData.avatarUrl,
-    })
-    setIsEditMode(false)
+  const handleSave = async () => {
+    try {
+      setIsLoading(true)
+      const payload: Partial<BackendUserPayload> = {
+        name: editData.name,
+        phoneNumber: editData.phoneNumber,
+        email: editData.email,
+        class: editData.class,
+        institute: editData.institute,
+        profilePicture: profileImage || userData.profilePicture,
+      }
+
+      if (onUpdateAction) {
+        await onUpdateAction(payload)
+      }
+
+      setUserData(prev => ({
+        ...prev,
+        ...payload,
+        profilePicture: payload.profilePicture || prev.profilePicture,
+      }))
+      setIsEditMode(false)
+    } catch (error) {
+      console.error("Failed to update profile:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleInputChange = (field: keyof UserProfileData, value: string) => {
+  const handleInputChange = (field: keyof BackendUserPayload, value: string) => {
     setEditData(prev => ({
       ...prev,
       [field]: value,
@@ -76,6 +140,7 @@ export function UserProfile() {
   }
 
   const getInitials = (name: string) => {
+    if (!name) return 'RB'
     return name
       .split(' ')
       .map(n => n[0])
@@ -83,12 +148,10 @@ export function UserProfile() {
       .toUpperCase()
   }
 
-  const profileImageToDisplay = profileImage || userData.avatarUrl
+  const profileImageToDisplay = formatProfilePic(profileImage || userData.profilePicture)
 
   return (
     <div className="relative min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
-      
-      {/* Background Grids & Glows matching your website theme */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#10b9810a_1px,transparent_1px),linear-gradient(to_bottom,#10b9810a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-400/10 dark:bg-emerald-600/10 blur-[140px] pointer-events-none rounded-full" />
 
@@ -122,22 +185,15 @@ export function UserProfile() {
           )}
         </div>
 
-        {/* Main Card */}
+        {/* Profile Card */}
         <div className="relative rounded-[2.2rem] bg-white/90 dark:bg-[#05130d]/90 backdrop-blur-2xl border border-emerald-100/80 dark:border-emerald-900/30 shadow-2xl shadow-emerald-950/[0.04] overflow-hidden">
-          
           <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-emerald-400/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           <div className="p-8 sm:p-10 space-y-8">
-            
-            {/* Avatar & Name Header */}
             <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100 dark:border-emerald-900/30">
               <div className="relative group">
                 <Avatar className="h-28 w-28 border-4 border-emerald-200/60 dark:border-emerald-800/60 shadow-xl">
-                  {profileImageToDisplay ? (
-                    <AvatarImage src={profileImageToDisplay} alt={userData.name} className="object-cover" />
-                  ) : (
-                    <AvatarImage src="" alt={userData.name} />
-                  )}
+                  <AvatarImage src={profileImageToDisplay || undefined} alt={userData.name} className="object-cover" />
                   <AvatarFallback className="bg-emerald-100 dark:bg-emerald-950 text-2xl font-black text-emerald-600 dark:text-emerald-400">
                     {getInitials(userData.name)}
                   </AvatarFallback>
@@ -184,16 +240,13 @@ export function UserProfile() {
               </div>
             </div>
 
-            {/* Profile Info Grid */}
             <div className="space-y-6">
-              
               {/* Contact Information */}
               <div className="space-y-3">
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-emerald-200/50">
                   Contact Information
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
                       <Mail size={15} className="text-emerald-600 dark:text-emerald-400" />
@@ -204,11 +257,12 @@ export function UserProfile() {
                         type="email"
                         value={editData.email || ''}
                         onChange={e => handleInputChange('email', e.target.value)}
+                        placeholder="Email"
                         className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
                       />
                     ) : (
                       <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.email}
+                        {userData.email || 'N/A'}
                       </div>
                     )}
                   </div>
@@ -221,17 +275,17 @@ export function UserProfile() {
                     {isEditMode ? (
                       <Input
                         type="tel"
-                        value={editData.phone || ''}
-                        onChange={e => handleInputChange('phone', e.target.value)}
+                        value={editData.phoneNumber || ''}
+                        onChange={e => handleInputChange('phoneNumber', e.target.value)}
+                        placeholder="Phone Number"
                         className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
                       />
                     ) : (
                       <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.phone}
+                        {userData.phoneNumber || 'N/A'}
                       </div>
                     )}
                   </div>
-
                 </div>
               </div>
 
@@ -241,7 +295,6 @@ export function UserProfile() {
                   Academic Information
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
                       <BookOpen size={15} className="text-emerald-600 dark:text-emerald-400" />
@@ -251,11 +304,12 @@ export function UserProfile() {
                       <Input
                         value={editData.class || ''}
                         onChange={e => handleInputChange('class', e.target.value)}
+                        placeholder="Class"
                         className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
                       />
                     ) : (
                       <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.class}
+                        {userData.class || 'N/A'}
                       </div>
                     )}
                   </div>
@@ -269,29 +323,29 @@ export function UserProfile() {
                       <Input
                         value={editData.institute || ''}
                         onChange={e => handleInputChange('institute', e.target.value)}
+                        placeholder="Institute"
                         className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
                       />
                     ) : (
                       <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.institute}
+                        {userData.institute || 'N/A'}
                       </div>
                     )}
                   </div>
-
                 </div>
               </div>
-
             </div>
 
-            {/* Action Buttons */}
+            {/* Edit Mode Buttons */}
             {isEditMode && (
               <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100 dark:border-emerald-900/30">
                 <Button
                   onClick={handleSave}
+                  disabled={isLoading}
                   className="flex-1 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-600/30 rounded-xl h-12 font-bold"
                 >
                   <Save size={16} />
-                  Save Changes
+                  {isLoading ? 'Saving...' : 'Save Changes'}
                 </Button>
                 <Button
                   onClick={handleCancel}
@@ -303,14 +357,12 @@ export function UserProfile() {
                 </Button>
               </div>
             )}
-
           </div>
         </div>
 
-        {/* Tip Box */}
         <div className="rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/30 p-4 backdrop-blur-xl">
           <p className="text-xs font-semibold text-slate-600 dark:text-emerald-200/80 text-center">
-            💡 আপনার প্রোফাইল তথ্য আপডেট রাখলে রুটস অব বায়োলজি (Roots Of Biology) থেকে সঠিক সময়ে নোটিফিকেশন ও সার্ভিস পেতে সুবিধা হবে।
+            💡 আপনার প্রোফাইল তথ্য আপডেট রাখলে রুটস অব বায়োলজি (Roots Of Biology) থেকে সঠিক সময়ে নোটিফিকেশন ও সার্ভিস পেতে সুবিধা হবে।
           </p>
         </div>
 
