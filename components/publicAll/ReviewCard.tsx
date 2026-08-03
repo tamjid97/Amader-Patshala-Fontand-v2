@@ -4,7 +4,19 @@ import React from "react";
 import Image from "next/image";
 import { Quote } from "lucide-react";
 
-export default function ReviewCard({ fidbac }) {
+// প্রপসের জন্য ইন্টারফেস ডিফাইন করা হলো যাতে টাইপ এরর না আসে
+interface FeedbackItem {
+  name: string;
+  role: string;
+  feedback: string;
+  img?: string;
+}
+
+interface ReviewCardProps {
+  fidbac: FeedbackItem;
+}
+
+export default function ReviewCard({ fidbac }: ReviewCardProps) {
   const { name, role, feedback, img } = fidbac;
 
   return (
