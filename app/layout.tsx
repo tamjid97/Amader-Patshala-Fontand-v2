@@ -10,9 +10,11 @@ import { ThemeProvider } from '@/components/ui/theme-provider';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'Roots Of Biology — Bio Research Dashboard',
-  description: 'A premium biology-themed analytics dashboard with a glowing, animated molecular background.',
+  title: 'Roots Of Biology — Best Biology Coaching in Khulna | By S M Tamjid Hossain Epick',
+  description: 'Roots Of Biology is a premier biology coaching center and research dashboard in Khulna, developed by S M Tamjid Hossain Epick (epickdev).',
   generator: 'epickdev',
+  authors: [{ name: 'S M Tamjid Hossain Epick', url: 'আপনার-পোর্টফোলিও-বা-গিটহাব-লিংক' }],
+  keywords: ['Roots Of Biology Khulna', 'S M Tamjid Hossain Epick', 'epickdev', 'Biology Coaching in Khulna'],
   icons: {
     icon: "/icon.png",
   },

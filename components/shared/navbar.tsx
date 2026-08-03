@@ -158,7 +158,7 @@ console.log("Final Profile Pic URL:", profilePic);
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
   const router = useRouter(); 
 
-  // 🌟 ইউজারের Role অনুযায়ী সঠিক Dashboard Path নির্ধারণ
+
   const role = user?.data?.role?.toUpperCase();
   let dashboardPath = "/user_dashboard"; // Default (Student)
 

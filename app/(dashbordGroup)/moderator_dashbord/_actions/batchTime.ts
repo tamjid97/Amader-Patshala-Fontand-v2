@@ -15,7 +15,7 @@ type BatchState = {
     data?: unknown;
 };
 
-// 🌟 হেল্পার ফাংশন: রেসপন্স সেফলি JSON-এ রূপান্তর করার জন্য
+
 const handleApiResponse = async (res: Response) => {
     const contentType = res.headers.get("content-type");
     
