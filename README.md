@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <h1>🧬 Roots of Biology</h1>
+  <p>A Comprehensive Biology Learning Management System (LMS)</p>
+</div>
 
-## Getting Started
+## 📖 Overview
+Roots of biology is a specialized learning management system focused on biology education. Built with a 3-tier role architecture: Admins oversee platform operations and user moderation; Moderators handle student approvals, batch timing, exam result publishing, and study material uploads; and Students access interactive diagrams, view schedules, download PDFs, and participate in online exams.
 
-First, run the development server:
+## 🚀 The Problem & Solution
+* **The Problem:** Students lack a centralized online portal to take biology exams, track batch schedules, download curated study materials, and visualize complex biology topics.
+* **The Solution:** An all-in-one educational platform integrating interactive diagrams, automated online exams, PDF resource distribution, and automated administrative approval workflows.
 
-```bash
+## ✨ Key Features
+- 🔐 **3-Tier RBAC:** Strict Role-Based Access Control (Admin, Moderator, Student).
+- 🛡️ **Admin Controls:** Promote Moderators & Ban/Unban Users.
+- 📝 **Moderator Tools:** PDF/Image Uploads & Student Approvals.
+- 📅 **Routine Management:** Dynamic Batch Schedule management.
+- ⏱️ **Online Exams:** Automated online exam system with instant result publishing.
+- 📚 **Student Portal:** Access to PDF study material downloads & live exam participation.
+
+## 💻 Tech Stack
+- **Framework:** Next.js (App Router), React
+- **Styling:** Tailwind CSS, Framer Motion, Shadcn UI
+- **Language:** TypeScript
+- **Database:** PostgreSQL, Prisma ORM
+- **Deployment:** Vercel
+
+## 🛠️ Challenges & Learnings
+* **Challenges:** Implementing strict 3-tier Role-Based Access Control (RBAC), managing secure PDF file handling, and handling real-time state synchronization during online exams.
+* **Learnings:** Mastered Role-Based Access Control (RBAC) patterns, file handling workflows, online exam timer logic, and complex state management in React/Next.js.
+
+
+
+# Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
