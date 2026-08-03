@@ -11,21 +11,21 @@ export default function SpecialGifts() {
       id: 1,
       title: "Exclusive T-Shirt",
       subtitle: "Roots Of Biology Brand T-Shirt",
-      img: "/sir 1.jpeg", // আপনার টি-শার্টের ছবি এখানে দিন
+      img: "/giftss/Group 175.jpg.jpeg", // আপনার টি-শার্টের ছবি এখানে দিন
       tag: "Free",
     },
     {
       id: 2,
       title: "Premium Bookmark",
       subtitle: "Customized Wooden Bookmark",
-      img: "/sir2.jpg", // আপনার বুকমার্কের ছবি এখানে দিন
+      img: "/giftss/images (1).jpg", // আপনার বুকমার্কের ছবি এখানে দিন
       tag: "Free",
     },
     {
       id: 3,
       title: "Academic Calendar",
       subtitle: "2026 Complete Study Calendar",
-      img: "/sir 1.jpeg", // আপনার ক্যালেন্ডারের ছবি এখানে দিন
+      img: "/giftss/Group 176.jpg.jpeg", // আপনার ক্যালেন্ডারের ছবি এখানে দিন
       tag: "Free",
     },
   ];

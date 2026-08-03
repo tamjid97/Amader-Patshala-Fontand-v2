@@ -65,9 +65,9 @@ const navLinks = [
   { label: "Batch Time", href: "/batchTime" },
   { label: "Material", href: "/allBook" },
   { label: "Result", href: "/result" },
+  { label: "Online Exam", href: "/coming-soon" },
 ]
 
-// 🌟 প্রফেশনাল এবং ইউনিক থিম টগল বাটন 🌟
 function ModeToggle() {
   const { setTheme, resolvedTheme } = useTheme()
 
@@ -86,7 +86,7 @@ function ModeToggle() {
   )
 }
 
-// 🌟 Framer Motion থ্রি-ডি লোগো এবং স্পিন ইফেক্ট 🌟
+
 function BrandLogo() {
   const x = useMotionValue(0)
   const y = useMotionValue(0)

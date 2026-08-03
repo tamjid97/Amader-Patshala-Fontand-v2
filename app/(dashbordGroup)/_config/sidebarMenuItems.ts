@@ -83,11 +83,6 @@ export const MODERATOR_SIDEBAR_ITEMS: ISidebarItem[] = [
         icon: MessageSquare
     },
     {
-        label: "Banner Management",
-        href: "/moderator_dashbord/banners", 
-        icon: ImageIcon
-    },
-    {
         label: "Batch Schedule",
         href: "/moderator_dashbord/batch-schedule", 
         icon: Clock
