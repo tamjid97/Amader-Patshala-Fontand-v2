@@ -77,10 +77,16 @@ export const updateProfile = async (updatedData: {
       body: JSON.stringify(updatedData),
     });
 
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const htmlText = await res.text();
+      console.error("Backend Error Response:", htmlText);
+      return { success: false, message: "Backend returned an invalid format!" };
+    }
+
     const result = await res.json();
 
     if (result?.success) {
-      // প্রোফাইল আপডেট সফল হলে সার্ভার পেজের ক্যাশ ক্লিয়ার করবে
       revalidatePath("/profile");
     }
 
