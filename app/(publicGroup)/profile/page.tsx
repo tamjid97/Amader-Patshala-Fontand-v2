@@ -1,16 +1,20 @@
+import { getMe } from "@/app/(publicGroup)/_acttion/profile";
+import UserProfile from "@/components/ui/userProfile";
 
-import { UserProfile } from "@/components/ui/userProfile";
-import { getMe } from "../_acttion/profile";
 
 export default async function ProfilePage() {
-  const profileData = await getMe();
-  
-  // কনসোল করে টার্মিনালে চেক করুন কী ডেটা আসছে
-  console.log("SERVER PROFILE DATA:", profileData);
+  let initialData = null;
+
+  try {
+    const res = await getMe();
+    initialData = res;
+  } catch (error) {
+    console.error("Failed to fetch profile data:", error);
+  }
 
   return (
     <main>
-      <UserProfile initialData={profileData} />
+      <UserProfile initialData={initialData} />
     </main>
   );
 }

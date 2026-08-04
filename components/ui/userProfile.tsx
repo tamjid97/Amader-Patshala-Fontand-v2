@@ -1,13 +1,15 @@
 'use client'
 
-import { useState, useRef } from 'react'
-import { Camera, Edit2, Save, X, Mail, Phone, BookOpen, Building2, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { Edit2, Save, X, Mail, Phone, BookOpen, Building2, Sparkles, Loader2, IdCard, CheckCircle2, Calendar, ShieldCheck, Link as LinkIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { updateProfile } from '@/app/(publicGroup)/_acttion/profile'
 
 export interface BackendUserPayload {
   id: string
+  studentId?: string | null
   name: string
   phoneNumber: string
   email: string | null
@@ -33,18 +35,21 @@ interface UserProfileProps {
   onUpdateAction?: (data: Partial<BackendUserPayload>) => Promise<unknown>
 }
 
-// সেফলি ডাটা এক্সট্রাক্ট করার ফাংশন
 const extractUserInfo = (data: ApiResponse | BackendUserPayload | null | undefined): BackendUserPayload => {
   if (!data) {
     return {
       id: '',
+      studentId: 'N/A',
       name: 'User',
       phoneNumber: 'N/A',
       email: null,
       profilePicture: null,
       class: 'N/A',
       institute: 'N/A',
-      role: 'STUDENT'
+      role: 'STUDENT',
+      isApproved: 'PENDING',
+      status: 'INACTIVE',
+      createdAt: new Date().toISOString()
     }
   }
   if ('data' in data && data.data) {
@@ -53,19 +58,15 @@ const extractUserInfo = (data: ApiResponse | BackendUserPayload | null | undefin
   return data as BackendUserPayload
 }
 
-export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
   const [isEditMode, setIsEditMode] = useState(false)
-  const [profileImage, setProfileImage] = useState<string | null>(null)
+  const [profileImageUrlInput, setProfileImageUrlInput] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
 
-  // লেটেস্ট ইউজার ইনফো বের করে নেওয়া
-  const userInfo = extractUserInfo(initialData)
+  const userData = extractUserInfo(initialData)
 
-  const [userData, setUserData] = useState<BackendUserPayload>(userInfo)
-  const [editData, setEditData] = useState<Partial<BackendUserPayload>>(userInfo)
+  const [editData, setEditData] = useState<Partial<BackendUserPayload>>(userData)
 
-  // 🌟 Navbar-এর মতো প্রোফাইল পিকচার পাথ ফরম্যাট করার লজিক 🌟
   const BACKEND_URL = process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:5000";
   
   const formatProfilePic = (picPath: string | null) => {
@@ -77,14 +78,28 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
     return `${BACKEND_URL}/${cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath}`;
   };
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'N/A';
+    }
+  };
+
   const handleEditClick = () => {
     setEditData(userData)
+    setProfileImageUrlInput(userData.profilePicture || '')
     setIsEditMode(true)
   }
 
   const handleCancel = () => {
     setIsEditMode(false)
-    setProfileImage(null)
+    setProfileImageUrlInput('')
     setEditData(userData)
   }
 
@@ -97,19 +112,17 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
         email: editData.email,
         class: editData.class,
         institute: editData.institute,
-        profilePicture: profileImage || userData.profilePicture,
+        profilePicture: profileImageUrlInput.trim() !== '' ? profileImageUrlInput.trim() : userData.profilePicture,
       }
 
       if (onUpdateAction) {
         await onUpdateAction(payload)
+      } else {
+        await updateProfile(payload)
       }
 
-      setUserData(prev => ({
-        ...prev,
-        ...payload,
-        profilePicture: payload.profilePicture || prev.profilePicture,
-      }))
       setIsEditMode(false)
+      setProfileImageUrlInput('')
     } catch (error) {
       console.error("Failed to update profile:", error)
     } finally {
@@ -124,31 +137,19 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
     }))
   }
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setProfileImage(reader.result as string)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
   const getInitials = (name: string) => {
-    if (!name) return 'RB'
+    if (!name) return 'ST'
     return name
       .split(' ')
+      .filter(Boolean)
       .map(n => n[0])
       .join('')
       .toUpperCase()
   }
 
-  const profileImageToDisplay = formatProfilePic(profileImage || userData.profilePicture)
+  const profileImageToDisplay = formatProfilePic(
+    isEditMode && profileImageUrlInput !== '' ? profileImageUrlInput : userData.profilePicture
+  )
 
   return (
     <div className="relative min-h-screen bg-transparent py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -163,14 +164,14 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
             <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-300/50 dark:border-emerald-800/60 rounded-full mb-2 backdrop-blur-md shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 animate-pulse" />
               <span className="text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase tracking-widest">
-                Account Control
+                Student Profile
               </span>
             </div>
             <h1 className="text-3xl font-black text-slate-900 dark:text-emerald-50 tracking-tight">
               My Profile
             </h1>
             <p className="text-sm text-slate-500 dark:text-emerald-200/60 font-medium mt-0.5">
-              {isEditMode ? 'আপনার প্রোফাইল তথ্য আপডেট করুন' : 'আপনার অ্যাকাউন্টের ব্যক্তিগত ও একাডেমিক বিবরণ'}
+              {isEditMode ? 'আপনার প্রোফাইল তথ্য পরিবর্তন করুন' : 'আপনার অ্যাকাউন্টের ব্যক্তিগত, একাডেমিক ও সিস্টেম তথ্য'}
             </p>
           </div>
 
@@ -185,11 +186,13 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
           )}
         </div>
 
-        {/* Profile Card */}
+        {/* Main Card */}
         <div className="relative rounded-[2.2rem] bg-white/90 dark:bg-[#05130d]/90 backdrop-blur-2xl border border-emerald-100/80 dark:border-emerald-900/30 shadow-2xl shadow-emerald-950/[0.04] overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-emerald-400/15 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           <div className="p-8 sm:p-10 space-y-8">
+            
+            {/* Top User Info Section */}
             <div className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100 dark:border-emerald-900/30">
               <div className="relative group">
                 <Avatar className="h-28 w-28 border-4 border-emerald-200/60 dark:border-emerald-800/60 shadow-xl">
@@ -198,75 +201,143 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
                     {getInitials(userData.name)}
                   </AvatarFallback>
                 </Avatar>
-
-                {isEditMode && (
-                  <button
-                    onClick={handleAvatarClick}
-                    className="absolute bottom-0 right-0 rounded-2xl bg-emerald-600 p-3 text-white shadow-xl transition-all duration-300 hover:bg-emerald-700 hover:scale-110 active:scale-95"
-                  >
-                    <Camera size={18} />
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
               </div>
 
               <div className="flex-1 text-center sm:text-left space-y-2">
                 {isEditMode ? (
-                  <div className="space-y-2 max-w-md">
-                    <Input
-                      value={editData.name || ''}
-                      onChange={e => handleInputChange('name', e.target.value)}
-                      placeholder="Full Name"
-                      className="text-xl font-bold bg-slate-50 dark:bg-[#020a07] border-emerald-200 dark:border-emerald-800 rounded-xl"
-                    />
-                    <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">{userData.role}</p>
+                  <div className="space-y-4 max-w-md">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-600 dark:text-emerald-300">
+                        Full Name
+                      </label>
+                      <Input
+                        value={editData.name || ''}
+                        onChange={e => handleInputChange('name', e.target.value)}
+                        placeholder="Full Name"
+                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-800 rounded-xl"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1.5">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-emerald-300">
+                        <LinkIcon size={14} className="text-emerald-600 dark:text-emerald-400" />
+                        Profile Picture URL
+                      </label>
+                      <Input
+                        type="url"
+                        value={profileImageUrlInput}
+                        onChange={e => setProfileImageUrlInput(e.target.value)}
+                        placeholder="https://example.com/image.jpg"
+                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-800 rounded-xl text-xs"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-emerald-50 tracking-tight">
-                      {userData.name}
-                    </h2>
-                    <div className="inline-block mt-1 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200/60 dark:border-emerald-800/60 rounded-lg text-emerald-700 dark:text-emerald-300 font-extrabold text-xs">
-                      {userData.role}
+                    <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+                      <h2 className="text-3xl font-black text-slate-900 dark:text-emerald-50 tracking-tight">
+                        {userData.name}
+                      </h2>
+                      {userData.isApproved === 'APPROVED' && (
+                        <span title="Verified Account">
+                          <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-500/20" />
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Dynamic Badges */}
+                    <div className="flex items-center justify-center sm:justify-start gap-2 mt-2 flex-wrap">
+                      <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200/60 dark:border-emerald-800/60 rounded-lg text-emerald-700 dark:text-emerald-300 font-extrabold text-xs">
+                        {userData.role}
+                      </div>
+
+                      {userData.studentId && (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-emerald-900/40 border border-slate-200 dark:border-emerald-800/60 rounded-lg text-slate-700 dark:text-emerald-200 font-bold text-xs">
+                          <IdCard className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          <span>ID: {userData.studentId}</span>
+                        </div>
+                      )}
+
+                      {userData.status && (
+                        <div className={`px-2.5 py-1 rounded-lg border font-bold text-xs uppercase ${
+                          userData.status === 'ACTIVE' 
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' 
+                            : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                        }`}>
+                          {userData.status}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
             </div>
 
+            {/* Form & Data Grid */}
             <div className="space-y-6">
-              {/* Contact Information */}
+              
+              {/* Academic & Identity Information */}
               <div className="space-y-3">
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-emerald-200/50">
-                  Contact Information
+                  Academic & Identity Details
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
-                      <Mail size={15} className="text-emerald-600 dark:text-emerald-400" />
-                      Email Address
+                      <IdCard size={15} className="text-emerald-600 dark:text-emerald-400" />
+                      Student ID
+                    </label>
+                    <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
+                      {userData.studentId || 'N/A'}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
+                      <BookOpen size={15} className="text-emerald-600 dark:text-emerald-400" />
+                      Class / Batch
                     </label>
                     {isEditMode ? (
                       <Input
-                        type="email"
-                        value={editData.email || ''}
-                        onChange={e => handleInputChange('email', e.target.value)}
-                        placeholder="Email"
+                        value={editData.class || ''}
+                        onChange={e => handleInputChange('class', e.target.value)}
+                        placeholder="Class"
                         className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
                       />
                     ) : (
                       <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.email || 'N/A'}
+                        Class {userData.class || 'N/A'}
                       </div>
                     )}
                   </div>
 
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
+                      <Building2 size={15} className="text-emerald-600 dark:text-emerald-400" />
+                      Institute / School
+                    </label>
+                    {isEditMode ? (
+                      <Input
+                        value={editData.institute || ''}
+                        onChange={e => handleInputChange('institute', e.target.value)}
+                        placeholder="Institute"
+                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
+                      />
+                    ) : (
+                      <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
+                        {userData.institute || 'N/A'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="space-y-3 pt-2">
+                <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-emerald-200/50">
+                  Contact Information
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
                       <Phone size={15} className="text-emerald-600 dark:text-emerald-400" />
@@ -286,57 +357,63 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
                       </div>
                     )}
                   </div>
+
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
+                      <Mail size={15} className="text-emerald-600 dark:text-emerald-400" />
+                      Email Address
+                    </label>
+                    {isEditMode ? (
+                      <Input
+                        type="email"
+                        value={editData.email || ''}
+                        onChange={e => handleInputChange('email', e.target.value)}
+                        placeholder="Email"
+                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
+                      />
+                    ) : (
+                      <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
+                        {userData.email || 'N/A'}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Academic Information */}
+              {/* System Account Metadata */}
               <div className="space-y-3 pt-2">
                 <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-emerald-200/50">
-                  Academic Information
+                  Account Status & Metadata
                 </h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
-                      <BookOpen size={15} className="text-emerald-600 dark:text-emerald-400" />
-                      Class / Batch
+                      <ShieldCheck size={15} className="text-emerald-600 dark:text-emerald-400" />
+                      Approval Status
                     </label>
-                    {isEditMode ? (
-                      <Input
-                        value={editData.class || ''}
-                        onChange={e => handleInputChange('class', e.target.value)}
-                        placeholder="Class"
-                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
-                      />
-                    ) : (
-                      <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.class || 'N/A'}
-                      </div>
-                    )}
+                    <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm flex items-center justify-between">
+                      <span>{userData.isApproved || 'PENDING'}</span>
+                      {userData.isApproved === 'APPROVED' && (
+                        <span className="text-xs bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded font-bold">Verified</span>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
-                      <Building2 size={15} className="text-emerald-600 dark:text-emerald-400" />
-                      Institute
+                      <Calendar size={15} className="text-emerald-600 dark:text-emerald-400" />
+                      Joined Date
                     </label>
-                    {isEditMode ? (
-                      <Input
-                        value={editData.institute || ''}
-                        onChange={e => handleInputChange('institute', e.target.value)}
-                        placeholder="Institute"
-                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
-                      />
-                    ) : (
-                      <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        {userData.institute || 'N/A'}
-                      </div>
-                    )}
+                    <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
+                      {formatDate(userData.createdAt)}
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
 
-            {/* Edit Mode Buttons */}
+            {/* Action Buttons */}
             {isEditMode && (
               <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-slate-100 dark:border-emerald-900/30">
                 <Button
@@ -344,11 +421,21 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
                   disabled={isLoading}
                   className="flex-1 gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700 shadow-lg shadow-emerald-600/30 rounded-xl h-12 font-bold"
                 >
-                  <Save size={16} />
-                  {isLoading ? 'Saving...' : 'Save Changes'}
+                  {isLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={16} />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={handleCancel}
+                  disabled={isLoading}
                   variant="outline"
                   className="flex-1 gap-2 border-slate-200 dark:border-emerald-900/60 hover:bg-slate-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-emerald-200 rounded-xl h-12 font-bold"
                 >
@@ -360,9 +447,10 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
           </div>
         </div>
 
+        {/* Footer info notice */}
         <div className="rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/30 p-4 backdrop-blur-xl">
           <p className="text-xs font-semibold text-slate-600 dark:text-emerald-200/80 text-center">
-            💡 আপনার প্রোফাইল তথ্য আপডেট রাখলে রুটস অব বায়োলজি (Roots Of Biology) থেকে সঠিক সময়ে নোটিফিকেশন ও সার্ভিস পেতে সুবিধা হবে।
+            💡 Student ID (<span className="text-emerald-600 dark:text-emerald-400 font-bold">{userData.studentId}</span>) টি আপনার রুটস অব বায়োলজি সকল অফিসিয়াল পরীক্ষার জন্য সংরক্ষিত রাখুন।
           </p>
         </div>
 
@@ -370,3 +458,5 @@ export function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
     </div>
   )
 }
+
+export default UserProfile

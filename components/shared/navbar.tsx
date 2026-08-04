@@ -86,7 +86,6 @@ function ModeToggle() {
   )
 }
 
-
 function BrandLogo() {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
@@ -146,7 +145,6 @@ function BrandLogo() {
 }
 
 function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) {
-  // 🌟 Profile Picture URL Fix 🌟
   const BACKEND_URL = process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:5000";
   let profilePic = user?.data?.profilePicture;
 
@@ -154,26 +152,26 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
     const cleanPath = profilePic.replace(/\\/g, "/");
     profilePic = `${BACKEND_URL}/${cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath}`;
   }
-console.log("Final Profile Pic URL:", profilePic);
+
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
   const router = useRouter(); 
 
-
   const role = user?.data?.role?.toUpperCase();
-  let dashboardPath = "/user_dashboard"; // Default (Student)
 
-  if (role === "ADMIN") {
-    dashboardPath = "/admin_dashbord";
-  } else if (role === "MODERATOR") {
-    dashboardPath = "/moderator_dashbord";
-  }
-
-  // 🌟 Dynamic href সহ menuItems
   const menuItems = [
     { label: "View Profile", icon: User, href: "/profile" },
-    { label: "Dashboard", icon: LayoutDashboard, href: dashboardPath },
-    { label: "Notifications", icon: Bell, href: "/coming-soon" },
   ];
+
+  // 🌟 STUDENT ছাড়া বাকি সব রোল (ADMIN, MODERATOR, USER) এর জন্য ড্যাশবোর্ড থাকবে
+  if (role === "ADMIN") {
+    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/admin_dashbord" });
+  } else if (role === "MODERATOR") {
+    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/moderator_dashbord" });
+  } else if (role === "USER") {
+    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" });
+  }
+
+  menuItems.push({ label: "Notifications", icon: Bell, href: "/coming-soon" });
 
   return user?.success ? (
     <DropdownMenu>
@@ -182,7 +180,6 @@ console.log("Final Profile Pic URL:", profilePic);
         aria-label="Open profile menu"
       >
         <Avatar className="size-9">
-          {/* TypeScript Type Error Fix: profilePic || undefined */}
           <AvatarImage src={profilePic || undefined} alt={user?.data?.name || "User"} />
           <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
             {initial}
@@ -193,7 +190,6 @@ console.log("Final Profile Pic URL:", profilePic);
       <DropdownMenuContent align="end" sideOffset={8} className="w-64 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-[#030a08] shadow-xl">
         <div className="flex items-center gap-3 p-2">
           <Avatar className="size-10 shadow-sm">
-            {/* TypeScript Type Error Fix: profilePic || undefined */}
             <AvatarImage src={profilePic || undefined} alt={user?.data?.name || "User"} />
             <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
               {initial}

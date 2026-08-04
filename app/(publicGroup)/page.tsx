@@ -12,7 +12,9 @@ import TeacherProfile from "@/components/publicAll/TeacherProfile";
 
 
 
+
 export default function HomePage() {
+
   return (
     <main className="min-h-screen">
       {/* ব্যানার কম্পোনেন্ট এখানে কল করা হলো */}
