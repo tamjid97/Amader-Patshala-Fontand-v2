@@ -1,101 +1,89 @@
-import type { ISidebarItem } from "@/lib/type"
-import { 
+import type { ISidebarItem } from "@/lib/type";
+import {
   FileText,
   LayoutDashboard,
-  Award, 
-  MessageSquare, 
-  Image as ImageIcon, 
-  Clock, 
+  Award,
+  MessageSquare,
+  Image as ImageIcon,
+  Clock,
   UploadCloud,
   Users,
   UserCheck,
   ShieldPlus,
-  UserX
-} from "lucide-react"
+  UserX,
+} from "lucide-react";
 
 export const ADMIN_SIDEBAR_ITEMS: ISidebarItem[] = [
-    {
-        label: "Admin Dashboard",
-        href: "/admin_dashbord",
-        icon: LayoutDashboard
-    },
-    {
-        label: "All Users",
-        href: "/admin_dashbord/allUser",
-        icon: Users
-    },
-    {
-        label: "Student Approvals",
-        href: "/admin_dashbord/syudent",
-        icon: UserCheck 
-    },
-    {
-        label: "Manage Moderators",
-        href: "/admin_dashbord/modarator",
-        icon: ShieldPlus 
-    },
-    {
-        label: "Banned Users",
-        href: "/admin_dashbord/bannedUser",
-        icon: UserX 
-    }
+  {
+    label: "Admin Dashboard",
+    href: "/admin_dashbord",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "All Users",
+    href: "/admin_dashbord/allUser",
+    icon: Users,
+  },
+  {
+    label: "Manage Moderators",
+    href: "/admin_dashbord/modarator",
+    icon: ShieldPlus,
+  },
+  {
+    label: "Banned Users",
+    href: "/admin_dashbord/bannedUser",
+    icon: UserX,
+  },
 ];
 
-
-
-const USER_SIDEBAR_ITEMS : ISidebarItem[] = [
-    {
-        label : "Dashboard",
-        href : "/user_dashboard",
-        icon : LayoutDashboard
-    },
-    {
-        label : "Request Student",
-        href : "/user_dashboard/request-student",
-        icon : UserCheck
-    },
-    {
-        label : "Request Moderator",
-        href : "/user_dashboard/request-moderator",
-        icon : ShieldPlus
-    },
-]
+const USER_SIDEBAR_ITEMS: ISidebarItem[] = [
+  {
+    label: "Dashboard",
+    href: "/user_dashboard",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "Request Student",
+    href: "/user_dashboard/request-student",
+    icon: UserCheck,
+  },
+  {
+    label: "Request Moderator",
+    href: "/user_dashboard/request-moderator",
+    icon: ShieldPlus,
+  },
+];
 
 export const MODERATOR_SIDEBAR_ITEMS: ISidebarItem[] = [
-    {
-        label: "Dashboard",
-        href: "/moderator_dashbord",
-        icon: LayoutDashboard
-    },
-    {
-        label: "PDF Management",
-        href: "/moderator_dashbord/pdfs", // 👈 পাথ ফিক্স করা হয়েছে
-        icon: FileText
-    },
-    {
-        label: "Results",
-        href: "/moderator_dashbord/results", 
-        icon: Award
-    },
-    {
-        label: "Reviews",
-        href: "/moderator_dashbord/reviews", 
-        icon: MessageSquare
-    },
-    {
-        label: "Batch Schedule",
-        href: "/moderator_dashbord/batch-schedule", 
-        icon: Clock
-    },
-    {
-        label: "Media Upload",
-        href: "/moderator_dashbord/media-upload", 
-        icon: UploadCloud
-    },
-]
+  {
+    label: "Dashboard",
+    href: "/moderator_dashbord",
+    icon: LayoutDashboard,
+  },
+  {
+    label: "PDF Management",
+    href: "/moderator_dashbord/pdfs", // 👈 পাথ ফিক্স করা হয়েছে
+    icon: FileText,
+  },
+  {
+    label: "Batch Schedule",
+    href: "/moderator_dashbord/batch-schedule",
+    icon: Clock,
+  },
+  {
+    label: "Student Approvals",
+    href: "/moderator_dashbord/syudent",
+    icon: UserCheck,
+  },
+  {
+    label: "Results",
+    href: "/moderator_dashbord/results",
+    icon: Award,
+  },
+];
 
 export const sidebarMenuItems = {
-    USER : USER_SIDEBAR_ITEMS,
-    MODERATOR : MODERATOR_SIDEBAR_ITEMS, 
-    ADMIN : ADMIN_SIDEBAR_ITEMS
-}
+  USER: USER_SIDEBAR_ITEMS,
+  MODERATOR: MODERATOR_SIDEBAR_ITEMS,
+  ADMIN: ADMIN_SIDEBAR_ITEMS,
+};
