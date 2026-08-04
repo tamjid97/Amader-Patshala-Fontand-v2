@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   GraduationCap, 
@@ -9,7 +9,9 @@ import {
   XCircle, 
   Search, 
   User,
-  FileText
+  FileText,
+  Loader2,
+  AlertCircle
 } from "lucide-react";
 
 // Shadcn UI Components
@@ -18,94 +20,160 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-// রিকোয়েস্ট ডাটা টাইপ
 interface IStudentRequest {
   id: string;
   name: string;
   email: string;
-  status: "Pending" | "Approved" | "Rejected";
+  status: "PENDING" | "APPROVED" | "REJECTED";
   requestDate: string;
   image: string;
 }
 
-export default function StudentRequestsPage() {
-  // ডেমো রিকোয়েস্ট ডাটা
-  const [requests, setRequests] = useState<IStudentRequest[]>([
-    {
-      id: "1",
-      name: "Sabbir Rahman",
-      email: "sabbir@example.com",
-      status: "Pending",
-      requestDate: "2026-07-27",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80"
-    },
-    {
-      id: "2",
-      name: "Nafisa Anjum",
-      email: "nafisa@example.com",
-      status: "Pending",
-      requestDate: "2026-07-26",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80"
-    },
-    {
-      id: "3",
-      name: "Kamrul Islam",
-      email: "kamrul@example.com",
-      status: "Approved",
-      requestDate: "2026-07-25",
-      image: ""
-    },
-    {
-      id: "4",
-      name: "Farjana Akter",
-      email: "farjana@example.com",
-      status: "Rejected",
-      requestDate: "2026-07-24",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80"
-    },
-    {
-      id: "5",
-      name: "Mehedi Hasan",
-      email: "mehedi@example.com",
-      status: "Pending",
-      requestDate: "2026-07-27",
-      image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&q=80"
-    }
-  ]);
+interface IBackendUserItem {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  phoneNumber?: string | null;
+  isApproved?: string;
+  createdAt?: string;
+  profilePicture?: string | null;
+  image?: string | null;
+  [key: string]: unknown;
+}
 
+export default function StudentRequestsClient() {
+  const [requests, setRequests] = useState<IStudentRequest[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("Pending");
 
-  // 📊 স্ট্যাট কার্ডের জন্য গণনা
-  const totalRequests = requests.length;
-  const pendingCount = requests.filter((r) => r.status === "Pending").length;
-  const approvedCount = requests.filter((r) => r.status === "Approved").length;
+  // 🌟 ক্লায়েন্ট সাইড থেকে টোকেন নিয়ে ডেটা ফেচ করা
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      setErrorMessage(null);
 
-  // ✅ Approve Handler (এখানে ব্যাকএন্ড API বসাবেন)
-  const handleApprove = (id: string) => {
-    // API Call Example: await axios.patch(`/api/approve-student/${id}`);
-    setRequests((prev) =>
-      prev.map((req) => (req.id === id ? { ...req, status: "Approved" } : req))
-    );
+      const token = 
+        localStorage.getItem("accessToken") || 
+        localStorage.getItem("token") || 
+        localStorage.getItem("authToken") ||
+        document.cookie.split("; ").find(row => row.startsWith("accessToken="))?.split("=")[1] ||
+        document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1];
+
+      const res = await fetch("https://amader-patshal-backend.vercel.app/api/moderator/pending-requests", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+
+      const result = await res.json();
+
+      if (result?.success && result?.data) {
+        const rawData = Array.isArray(result.data) 
+          ? (result.data as IBackendUserItem[]) 
+          : [result.data as IBackendUserItem];
+
+        const formattedData = rawData.map((item: IBackendUserItem) => {
+          const approvalStatus = (item.isApproved || "PENDING").trim().toUpperCase();
+          let formattedStatus: "PENDING" | "APPROVED" | "REJECTED" = "PENDING";
+          if (approvalStatus === "APPROVED") formattedStatus = "APPROVED";
+          else if (approvalStatus === "REJECTED") formattedStatus = "REJECTED";
+
+          return {
+            id: item.id,
+            name: item.name || "Unknown User",
+            email: item.email || item.phoneNumber || "N/A",
+            status: formattedStatus,
+            requestDate: item.createdAt ? item.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
+            image: item.profilePicture || item.image || "",
+          };
+        });
+        setRequests(formattedData);
+      } else {
+        setRequests([]);
+      }
+    } catch (error: unknown) {
+      console.error("Error fetching student requests:", error);
+      setErrorMessage("সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না। ব্যাকএন্ড সার্ভার বন্ধ থাকতে পারে অথবা নেটওয়ার্ক সমস্যা হয়েছে।");
+      setRequests([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // ❌ Reject Handler (এখানে ব্যাকএন্ড API বসাবেন)
-  const handleReject = (id: string) => {
-    // API Call Example: await axios.patch(`/api/reject-student/${id}`);
-    setRequests((prev) =>
-      prev.map((req) => (req.id === id ? { ...req, status: "Rejected" } : req))
-    );
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  // ✅ Approve Handler
+  const handleApprove = async (id: string) => {
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || localStorage.getItem("authToken");
+      const res = await fetch(`https://amader-patshal-backend.vercel.app/api/moderator/approve/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status: "APPROVED" }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setRequests((prev) =>
+          prev.map((req) => (req.id === id ? { ...req, status: "APPROVED" } : req))
+        );
+      } else {
+        alert(result.message || "Failed to approve");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
   };
 
-  // 🔍 সার্চ এবং ফিল্টারিং লজিক
-  const filteredRequests = requests.filter((r) => {
-    const matchesSearch = 
-      r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === "All" || r.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+  // ❌ Reject Handler
+  const handleReject = async (id: string) => {
+    try {
+      const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || localStorage.getItem("authToken");
+      const res = await fetch(`https://amader-patshal-backend.vercel.app/api/moderator/approve/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status: "REJECTED" }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setRequests((prev) =>
+          prev.map((req) => (req.id === id ? { ...req, status: "REJECTED" } : req))
+        );
+      } else {
+        alert(result.message || "Failed to reject");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Something went wrong");
+    }
+  };
+
+  // 📊 নিরাপদ গণনা
+  const totalRequests = requests?.length || 0;
+  const pendingCount = requests?.filter((r) => r.status === "PENDING").length || 0;
+  const approvedCount = requests?.filter((r) => r.status === "APPROVED").length || 0;
+
+  // 🔍 সার্চ লজিক
+  const filteredRequests = (requests || []).filter((r) => {
+    const nameMatch = r.name ? r.name.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    const emailMatch = r.email ? r.email.toLowerCase().includes(searchQuery.toLowerCase()) : false;
+    return nameMatch || emailMatch;
   });
 
   return (
@@ -117,7 +185,7 @@ export default function StudentRequestsPage() {
           Student Approval Requests
         </h1>
         <p className="text-slate-500 dark:text-emerald-100/70">
-          যেসব ইউজার স্টুডেন্ট হওয়ার জন্য রিকোয়েস্ট পাঠিয়েছে, তাদের তালিকা দেখে Approve বা Reject করুন।
+          যেসব ইউজার স্টুডেন্ট হওয়ার জন্য রিকোয়েস্ট পাঠিয়েছে, তাদের তালিকা দেখে Approve বা Reject করুন।
         </p>
       </div>
 
@@ -170,7 +238,7 @@ export default function StudentRequestsPage() {
         </motion.div>
       </div>
 
-      {/* 📋 Data Table & Filter Area */}
+      {/* 📋 Data Table & Search Area */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -186,19 +254,7 @@ export default function StudentRequestsPage() {
               </CardDescription>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full sm:w-40 h-10 px-3 pr-8 rounded-md border text-sm bg-background border-input dark:bg-slate-900/50 dark:border-emerald-800/50 dark:text-emerald-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="Pending">Pending Only</option>
-                <option value="Approved">Approved Only</option>
-                <option value="Rejected">Rejected Only</option>
-                <option value="All">All Requests</option>
-              </select>
-
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               {/* Search Box */}
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -226,10 +282,30 @@ export default function StudentRequestsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredRequests.length === 0 ? (
+                  {loading ? (
                     <TableRow>
                       <TableCell colSpan={5} className="h-32 text-center text-slate-500 dark:text-slate-400">
-                        কোনো আবেদন পাওয়া যায় নি।
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin" /> ডেটা লোড হচ্ছে...
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : errorMessage ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center text-red-500 dark:text-red-400">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <AlertCircle className="h-6 w-6" />
+                          <span>{errorMessage}</span>
+                          <Button size="sm" variant="outline" onClick={fetchRequests} className="mt-2">
+                            পুনরায় চেষ্টা করুন (Retry)
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredRequests.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center text-slate-500 dark:text-slate-400">
+                        কোনো আবেদন পাওয়া যায় নি।
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -247,7 +323,7 @@ export default function StudentRequestsPage() {
                           </div>
                         </TableCell>
 
-                        {/* 👤 Name & Email */}
+                        {/* 👤 Name & Email/Phone */}
                         <TableCell className="font-medium text-slate-700 dark:text-emerald-50">
                           <div>{req.name}</div>
                           <span className="text-xs text-slate-400 block font-normal">{req.email}</span>
@@ -261,25 +337,24 @@ export default function StudentRequestsPage() {
                         {/* 🟢 Status Badge */}
                         <TableCell>
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            req.status === "Approved"
+                            req.status === "APPROVED"
                               ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300"
-                              : req.status === "Pending"
+                              : req.status === "PENDING"
                               ? "bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300"
                               : "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300"
                           }`}>
                             <span className={`h-1.5 w-1.5 rounded-full ${
-                              req.status === "Approved" ? "bg-emerald-500" : req.status === "Pending" ? "bg-amber-500" : "bg-red-500"
+                              req.status === "APPROVED" ? "bg-emerald-500" : req.status === "PENDING" ? "bg-amber-500" : "bg-red-500"
                             }`} />
                             {req.status}
                           </span>
                         </TableCell>
                         
-                        {/* ⚡ Actions (Approve / Reject) */}
+                        {/* ⚡ Actions */}
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            {req.status === "Pending" ? (
+                            {req.status === "PENDING" ? (
                               <>
-                                {/* Reject Button */}
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -290,7 +365,6 @@ export default function StudentRequestsPage() {
                                   Reject
                                 </Button>
                                 
-                                {/* Approve Button */}
                                 <Button 
                                   size="sm" 
                                   onClick={() => handleApprove(req.id)}

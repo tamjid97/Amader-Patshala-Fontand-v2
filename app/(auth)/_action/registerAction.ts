@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 
 type RegisterResponse = {
   success: boolean;
@@ -45,13 +46,10 @@ export const registerUser = async (prevState: RegisterResponse, formData: FormDa
     const result = await res.json();
 
     if (res.ok && (result.success || res.status === 201)) {
-      revalidateTag("register", undefined as unknown as never);
-      return {
-        success: true,
-        statusCode: result.statusCode || 201,
-        message: result.message || "User registered successfully",
-        data: result.data || {},
-      };
+      revalidateTag("register","max");
+      
+      // রেজিস্ট্রেশন সফল হলে সরাসরি লগইন পেজে রিডাইরেক্ট করবে
+      redirect("/login");
     }
 
     return {
@@ -62,6 +60,11 @@ export const registerUser = async (prevState: RegisterResponse, formData: FormDa
     };
 
   } catch (error: unknown) {
+    // Next.js এর redirect এক্সসেপশন হ্যান্ডেল করার জন্য সঠিক টাইপ চেক
+    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
+      throw error;
+    }
+
     console.error("Register Server Action Error:", error);
     return {
       success: false,

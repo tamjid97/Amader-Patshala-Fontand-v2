@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import { 
   Eye, EyeOff, User, Phone, 
   School, GraduationCap, Dna, Lock, Image as ImageIcon 
@@ -30,15 +30,14 @@ const itemVariants: Variants = {
   },
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
     <Button 
       type="submit" 
-      disabled={pending}
+      disabled={isPending}
       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
     >
-      {pending ? "Creating Account..." : "Register"}
+      {isPending ? "Creating Account..." : "Register"}
     </Button>
   );
 }
@@ -46,6 +45,8 @@ function SubmitButton() {
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState("");
+  const [clientError, setClientError] = useState("");
+  const [isPending, startTransition] = useTransition(); // transition হুক যুক্ত করা হলো
 
   const initialState = {
     success: false,
@@ -55,6 +56,32 @@ export default function RegisterForm() {
   };
 
   const [state, formAction] = useActionState(registerUser, initialState);
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setClientError("");
+
+    const formData = new FormData(event.currentTarget);
+    const phoneNumber = formData.get("phoneNumber") as string;
+    const password = formData.get("password") as string;
+
+    // ফোন নম্বর ১১ ডিজিট কিনা চেক
+    if (!phoneNumber || phoneNumber.length !== 11 || !/^\d+$/.test(phoneNumber)) {
+      setClientError("Phone number must be exactly 11 digits!");
+      return;
+    }
+
+    // পাসওয়ার্ড ৬ ডিজিট বা তার বেশি কিনা চেক
+    if (!password || password.length < 6) {
+      setClientError("Password must be at least 6 characters long!");
+      return;
+    }
+
+    // startTransition এর ভেতরে formAction কল করা হলো
+    startTransition(() => {
+      formAction(formData);
+    });
+  };
 
   return (
     <div className="relative flex min-h-[85vh] w-full items-center justify-center overflow-hidden p-4 md:p-8">
@@ -88,16 +115,16 @@ export default function RegisterForm() {
             </p>
           </div>
 
-          <form action={formAction} className="p-8 pt-4">
+          <form onSubmit={handleSubmit} className="p-8 pt-4">
             
             {/* Status Message Display */}
-            {state?.message && (
+            {(clientError || state?.message) && (
               <div className={`mb-4 rounded-xl p-3 text-center text-sm font-medium ${
-                state.success 
+                state.success && !clientError
                   ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" 
                   : "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300"
               }`}>
-                {state.message}
+                {clientError || state.message}
               </div>
             )}
 
@@ -163,6 +190,7 @@ export default function RegisterForm() {
                     id="phoneNumber"
                     name="phoneNumber"
                     type="tel"
+                    maxLength={11}
                     placeholder="01XXXXXXXXX"
                     required
                     className="pl-10 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/50"
@@ -228,7 +256,7 @@ export default function RegisterForm() {
               {/* Password */}
               <motion.div variants={itemVariants} className="space-y-2 md:col-span-2">
                 <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
-                  Password
+                  Password (Min 6 characters)
                 </Label>
                 <div className="relative group">
                   <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500" />
@@ -256,7 +284,7 @@ export default function RegisterForm() {
 
               {/* Submit Button */}
               <motion.div variants={itemVariants} className="pt-2 md:col-span-2">
-                <SubmitButton />
+                <SubmitButton isPending={isPending} />
               </motion.div>
 
             </motion.div>

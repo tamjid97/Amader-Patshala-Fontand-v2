@@ -33,13 +33,12 @@ import {
 } from "@/components/ui/table";
 import { createPdf, deletePdf, getPdfs, updatePdf } from "../_actions/pdf";
 
-// Server Actions import করুন (আপনার ফাইলের পাথ অনুযায়ী ঠিক করে নেবেন)
-
 interface IPdf {
   id: string;
-  _id?: string; // ব্যাকএন্ডে সাধারণত _id থাকে
+  _id?: string;
   title: string;
   subject: string;
+  className?: string;
   pdfUrl?: string;
   link?: string;
   image: string;
@@ -57,22 +56,29 @@ export default function PdfManagementPage() {
     id: "",
     title: "",
     subject: "",
+    className: "",
     link: "",
     image: "",
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // ডাটা লোড করার ফাংশন
+  // ডেটা ম্যাপিং এবং লোড করার ফাংশন
   const fetchPdfs = async () => {
     setLoading(true);
     try {
       const res = await getPdfs();
-      if (res.success && Array.isArray(res.data)) {
-        // ব্যাকএন্ডের _id কে id হিসেবে ম্যাপ করা হলো এবং pdfUrl কে link হিসেবে ধরা হলো
-        const formattedData = res.data.map((item: any) => ({
-          ...item,
-          id: item._id || item.id,
-          link: item.pdfUrl || item.link,
+      // ব্যাকএন্ড থেকে ডেটা অ্যারে বা অবজেক্টের ভেতর থেকে আনার ব্যবস্থা
+      const rawData = Array.isArray(res) ? res : res.data;
+
+      if (res.success && Array.isArray(rawData)) {
+        const formattedData = rawData.map((item: Record<string, unknown>) => ({
+          ...(item as unknown as IPdf),
+          id: (item._id as string) || (item.id as string) || "",
+          link: (item.pdfUrl as string) || (item.link as string) || "",
+          image: (item.image as string) || (item.coverImage as string) || "",
+          title: (item.title as string) || "",
+          subject: (item.subject as string) || (item.category as string) || "",
+          className: (item.className as string) || (item.class as string) || "",
         }));
         setPdfs(formattedData);
       }
@@ -83,7 +89,6 @@ export default function PdfManagementPage() {
     }
   };
 
-  // ডাটা লোড করার ফাংশন
   useEffect(() => {
     let isMounted = true;
 
@@ -91,11 +96,17 @@ export default function PdfManagementPage() {
       setLoading(true);
       try {
         const res = await getPdfs();
-        if (isMounted && res.success && Array.isArray(res.data)) {
-          const formattedData = res.data.map((item: any) => ({
-            ...item,
-            id: item._id || item.id,
-            link: item.pdfUrl || item.link,
+        const rawData = Array.isArray(res) ? res : res.data;
+
+        if (isMounted && res.success && Array.isArray(rawData)) {
+          const formattedData = rawData.map((item: Record<string, unknown>) => ({
+            ...(item as unknown as IPdf),
+            id: (item._id as string) || (item.id as string) || "",
+            link: (item.pdfUrl as string) || (item.link as string) || "",
+            image: (item.image as string) || (item.coverImage as string) || "",
+            title: (item.title as string) || "",
+            subject: (item.subject as string) || (item.category as string) || "",
+            className: (item.className as string) || (item.class as string) || "",
           }));
           setPdfs(formattedData);
         }
@@ -115,13 +126,11 @@ export default function PdfManagementPage() {
     };
   }, []);
 
-  // ইনপুট হ্যান্ডলার
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // সাবমিট (Create & Update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.subject || !formData.link) return;
@@ -129,40 +138,39 @@ export default function PdfManagementPage() {
     const data = new FormData();
     data.append("title", formData.title);
     data.append("subject", formData.subject);
-    data.append("link", formData.link);
+    data.append("className", formData.className);
+    data.append("link", formData.link); 
     data.append("image", formData.image);
 
     startTransition(async () => {
       if (isEditing && formData.id) {
-        // Update Action
         const res = await updatePdf(formData.id, data);
         if (res.success) {
-          alert("সফলভাবে আপডেট করা হয়েছে!");
+          alert("সফলভাবে আপডেট করা হয়েছে!");
           setIsEditing(false);
           fetchPdfs();
         } else {
-          alert(res.message || "আপডেট করতে সমস্যা হয়েছে।");
+          alert(res.message || "আপডেট করতে সমস্যা হয়েছে।");
         }
       } else {
-        // Create Action
         const res = await createPdf(data);
         if (res.success) {
-          alert("সফলভাবে পিডিএফ যুক্ত করা হয়েছে!");
+          alert("সফলভাবে পিডিএফ যুক্ত করা হয়েছে!");
           fetchPdfs();
         } else {
-          alert(res.message || "যোগ করতে সমস্যা হয়েছে।");
+          alert(res.message || "যোগ করতে সমস্যা হয়েছে।");
         }
       }
-      setFormData({ id: "", title: "", subject: "", link: "", image: "" });
+      setFormData({ id: "", title: "", subject: "", className: "", link: "", image: "" });
     });
   };
 
-  // এডিট হ্যান্ডলার
   const handleEdit = (pdf: IPdf) => {
     setFormData({
-      id: pdf.id,
-      title: pdf.title,
-      subject: pdf.subject,
+      id: pdf.id || "",
+      title: pdf.title || "",
+      subject: pdf.subject || "",
+      className: pdf.className || "",
       link: pdf.link || "",
       image: pdf.image || "",
     });
@@ -170,31 +178,29 @@ export default function PdfManagementPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // ডিলিট হ্যান্ডলার
   const handleDelete = async (id: string) => {
     if (confirm("আপনি কি নিশ্চিত যে এই PDF টি ডিলিট করতে চান?")) {
       startTransition(async () => {
         const res = await deletePdf(id);
         if (res.success) {
-          alert("সফলভাবে ডিলিট করা হয়েছে!");
+          alert("সফলভাবে ডিলিট করা হয়েছে!");
           fetchPdfs();
         } else {
-          alert(res.message || "ডিলিট করতে সমস্যা হয়েছে।");
+          alert(res.message || "ডিলিট করতে সমস্যা হয়েছে।");
         }
       });
     }
   };
 
-  // সার্চ ফিল্টার
   const filteredPdfs = pdfs.filter(
     (pdf) =>
-      pdf.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      pdf.subject.toLowerCase().includes(searchTerm.toLowerCase()),
+      (pdf.title || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
+      (pdf.subject || "").toLowerCase().includes((searchTerm || "").toLowerCase()) ||
+      (pdf.className || "").toLowerCase().includes((searchTerm || "").toLowerCase())
   );
 
   return (
     <div className="space-y-8 pb-10 animate-in fade-in duration-500">
-      {/* 🌟 Header Section */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-emerald-50">
           PDF Management
@@ -205,7 +211,6 @@ export default function PdfManagementPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* 📝 Create / Update Form (Left Side) */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -214,11 +219,7 @@ export default function PdfManagementPage() {
           <Card className="border-emerald-100 dark:border-emerald-900/50 dark:bg-[#030a08]/80 shadow-sm sticky top-6">
             <CardHeader>
               <CardTitle className="text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-                {isEditing ? (
-                  <Edit2 className="h-5 w-5" />
-                ) : (
-                  <Plus className="h-5 w-5" />
-                )}
+                {isEditing ? <Edit2 className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
                 {isEditing ? "Update PDF" : "Add New PDF"}
               </CardTitle>
               <CardDescription className="dark:text-slate-400">
@@ -234,7 +235,7 @@ export default function PdfManagementPage() {
                   <Input
                     id="title"
                     name="title"
-                    value={formData.title}
+                    value={formData.title || ""}
                     onChange={handleInputChange}
                     placeholder="e.g. Chapter 1 Notes"
                     required
@@ -249,10 +250,24 @@ export default function PdfManagementPage() {
                   <Input
                     id="subject"
                     name="subject"
-                    value={formData.subject}
+                    value={formData.subject || ""}
                     onChange={handleInputChange}
                     placeholder="e.g. Botany"
                     required
+                    className="dark:bg-slate-900/50 dark:border-emerald-800/50 focus-visible:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="className" className="dark:text-emerald-100">
+                    Class Name
+                  </Label>
+                  <Input
+                    id="className"
+                    name="className"
+                    value={formData.className || ""}
+                    onChange={handleInputChange}
+                    placeholder="e.g. HSC 2026 / Class 12"
                     className="dark:bg-slate-900/50 dark:border-emerald-800/50 focus-visible:ring-emerald-500"
                   />
                 </div>
@@ -265,7 +280,7 @@ export default function PdfManagementPage() {
                     id="image"
                     name="image"
                     type="url"
-                    value={formData.image}
+                    value={formData.image || ""}
                     onChange={handleInputChange}
                     placeholder="https://example.com/image.jpg"
                     className="dark:bg-slate-900/50 dark:border-emerald-800/50 focus-visible:ring-emerald-500"
@@ -280,7 +295,7 @@ export default function PdfManagementPage() {
                     id="link"
                     name="link"
                     type="url"
-                    value={formData.link}
+                    value={formData.link || ""}
                     onChange={handleInputChange}
                     placeholder="https://drive.google.com/..."
                     required
@@ -294,9 +309,7 @@ export default function PdfManagementPage() {
                     disabled={isPending}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
                   >
-                    {isPending && (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    )}
+                    {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {isEditing ? "Update PDF" : "Upload PDF"}
                   </Button>
                   {isEditing && (
@@ -309,6 +322,7 @@ export default function PdfManagementPage() {
                           id: "",
                           title: "",
                           subject: "",
+                          className: "",
                           link: "",
                           image: "",
                         });
@@ -324,7 +338,6 @@ export default function PdfManagementPage() {
           </Card>
         </motion.div>
 
-        {/* 📋 Data Table (Right Side) */}
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -337,14 +350,14 @@ export default function PdfManagementPage() {
                   Uploaded Files
                 </CardTitle>
                 <CardDescription className="dark:text-slate-400 mt-1">
-                  সর্বমোট {filteredPdfs.length} টি পিডিএফ পাওয়া গেছে।
+                  সর্বমোট {filteredPdfs.length} টি পিডিএফ পাওয়া গেছে।
                 </CardDescription>
               </div>
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <Input
                   type="search"
-                  value={searchTerm}
+                  value={searchTerm || ""}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search PDFs..."
                   className="pl-9 dark:bg-slate-900/50 dark:border-emerald-800/50 focus-visible:ring-emerald-500"
@@ -363,7 +376,7 @@ export default function PdfManagementPage() {
                         Title
                       </TableHead>
                       <TableHead className="font-semibold text-slate-600 dark:text-emerald-200">
-                        Subject
+                        Subject & Class
                       </TableHead>
                       <TableHead className="font-semibold text-slate-600 dark:text-emerald-200 text-right">
                         Actions
@@ -378,8 +391,7 @@ export default function PdfManagementPage() {
                           className="h-32 text-center text-slate-500 dark:text-slate-400"
                         >
                           <div className="flex justify-center items-center gap-2">
-                            <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />{" "}
-                            লোড হচ্ছে...
+                            <Loader2 className="h-5 w-5 animate-spin text-emerald-600" /> লোড হচ্ছে...
                           </div>
                         </TableCell>
                       </TableRow>
@@ -389,7 +401,7 @@ export default function PdfManagementPage() {
                           colSpan={4}
                           className="h-32 text-center text-slate-500 dark:text-slate-400"
                         >
-                          কোনো পিডিএফ পাওয়া যায়নি।
+                          কোনো পিডিএফ পাওয়া যায়নি।
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -398,7 +410,6 @@ export default function PdfManagementPage() {
                           key={pdf.id}
                           className="border-slate-100 dark:border-emerald-900/30 dark:hover:bg-emerald-950/20"
                         >
-                          {/* 🖼️ Image Cell */}
                           <TableCell className="p-2 text-center">
                             <div className="mx-auto h-12 w-12 overflow-hidden rounded-md border border-slate-200 bg-slate-100 dark:border-emerald-800 dark:bg-slate-800 flex items-center justify-center">
                               {pdf.image ? (
@@ -414,18 +425,25 @@ export default function PdfManagementPage() {
                           </TableCell>
 
                           <TableCell className="font-medium text-slate-700 dark:text-emerald-50">
-                            <div className="flex items-center gap-2">
-                              {pdf.title}
-                            </div>
+                            <div className="flex items-center gap-2">{pdf.title}</div>
                             <span className="text-xs text-slate-400 block mt-0.5">
                               {pdf.date || pdf.createdAt?.split("T")[0]}
                             </span>
                           </TableCell>
 
                           <TableCell className="text-slate-600 dark:text-slate-300">
-                            <span className="bg-slate-100 dark:bg-emerald-900/30 px-2 py-1 rounded-md text-xs border border-slate-200 dark:border-emerald-800/50">
-                              {pdf.subject}
-                            </span>
+                            <div className="flex flex-col gap-1 items-start">
+                              {pdf.subject && (
+                                <span className="bg-slate-100 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md text-xs border border-slate-200 dark:border-emerald-800/50">
+                                  {pdf.subject}
+                                </span>
+                              )}
+                              {pdf.className && (
+                                <span className="bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md text-[10px] border border-emerald-200 dark:border-emerald-800/40">
+                                  {pdf.className}
+                                </span>
+                              )}
+                            </div>
                           </TableCell>
 
                           <TableCell className="text-right">
@@ -435,9 +453,7 @@ export default function PdfManagementPage() {
                                   variant="ghost"
                                   size="icon"
                                   title="View PDF"
-                                  onClick={() =>
-                                    window.open(pdf.link, "_blank")
-                                  }
+                                  onClick={() => window.open(pdf.link, "_blank")}
                                   className="h-8 w-8 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950/30"
                                 >
                                   <LinkIcon className="h-4 w-4" />

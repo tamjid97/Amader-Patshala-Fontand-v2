@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import { motion } from "framer-motion";
-import { Plus, Edit2, Trash2, Award, ExternalLink, Search, Users, Calendar } from "lucide-react";
+import { Plus, Edit2, Trash2, Award, ExternalLink, Search, Users, Calendar, Loader2 } from "lucide-react";
 
-// Shadcn UI Components
+import { createResult, updateResult, deleteResult } from "../_actions/result";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
-// রেজাল্ট ডাটা টাইপ
 interface IResult {
   id: string;
   examName: string;
@@ -20,56 +20,67 @@ interface IResult {
   resultLink: string;
 }
 
-export default function ResultManagementPage() {
-  // State Management & Demo Data
-  const [results, setResults] = useState<IResult[]>([
-    { 
-      id: "1", 
-      examName: "Botany Chapter 1 CQ Test", 
-      batch: "HSC 2025", 
-      examDate: "2026-07-20",
-      resultLink: "https://docs.google.com/spreadsheets/..." 
-    },
-    { 
-      id: "2", 
-      examName: "Medical Admission Model Test - 01", 
-      batch: "Medical 2026", 
-      examDate: "2026-07-25",
-      resultLink: "https://drive.google.com/..." 
-    },
-  ]);
+interface Props {
+  initialResults: IResult[];
+}
+
+export default function ResultManagementContent({ initialResults = [] }: Props) {
+  // নিশ্চিত করা হলো যেন initialResults undefined হলে একটি খালি অ্যারে থাকে
+  const [results, setResults] = useState<IResult[]>(Array.isArray(initialResults) ? initialResults : []);
+  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const [formData, setFormData] = useState({ id: "", examName: "", batch: "", examDate: "", resultLink: "" });
   const [isEditing, setIsEditing] = useState(false);
 
-  // ইনপুট হ্যান্ডলার
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // সাবমিট (Create & Update)
-  const handleSubmit = (e: React.FormEvent) => {
+  // ফর্ম সাবমিট (Create & Update)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.examName || !formData.batch || !formData.resultLink) return;
 
-    if (isEditing) {
-      // Update Logic
-      setResults(results.map((res) => (res.id === formData.id ? { ...res, ...formData } : res)));
-      setIsEditing(false);
-    } else {
-      // Create Logic
-      const newResult = {
-        ...formData,
-        id: Date.now().toString(),
-      };
-      setResults([newResult, ...results]);
-    }
-    // Reset Form
-    setFormData({ id: "", examName: "", batch: "", examDate: "", resultLink: "" }); 
+    setLoading(true);
+    const formPayload = new FormData();
+    formPayload.append("examName", formData.examName);
+    formPayload.append("batch", formData.batch);
+    formPayload.append("examDate", formData.examDate);
+    formPayload.append("resultLink", formData.resultLink);
+
+    startTransition(async () => {
+      try {
+        if (isEditing) {
+          const res = await updateResult(formData.id, formPayload);
+          if (res.success) {
+            setResults((prev) => prev.map((r) => (r.id === formData.id ? { ...r, ...formData } : r)));
+            setIsEditing(false);
+            alert(res.message || "Result updated successfully!");
+          } else {
+            alert(res.message || "Failed to update result");
+          }
+        } else {
+          const res = await createResult(formPayload);
+          if (res.success && res.data) {
+            setResults((prev) => [res.data as IResult, ...prev]);
+            alert(res.message || "Result published successfully!");
+          } else {
+            alert(res.message || "Failed to publish result");
+          }
+        }
+        
+        setFormData({ id: "", examName: "", batch: "", examDate: "", resultLink: "" });
+      } catch (error) {
+        console.error("Submission error:", error);
+        alert("Something went wrong!");
+      } finally {
+        setLoading(false);
+      }
+    });
   };
 
-  // এডিট হ্যান্ডলার
   const handleEdit = (result: IResult) => {
     setFormData(result);
     setIsEditing(true);
@@ -77,16 +88,29 @@ export default function ResultManagementPage() {
   };
 
   // ডিলিট হ্যান্ডলার
-  const handleDelete = (id: string) => {
-    if (confirm("আপনি কি নিশ্চিত যে এই রেজাল্টটি ডিলিট করতে চান?")) {
-      setResults(results.filter((res) => res.id !== id));
-    }
+  const handleDelete = async (id: string) => {
+    if (!confirm("আপনি কি নিশ্চিত যে এই রেজাল্টটি ডিলিট করতে চান?")) return;
+
+    startTransition(async () => {
+      try {
+        const res = await deleteResult(id);
+        if (res.success) {
+          setResults((prev) => prev.filter((item) => item.id !== id));
+          alert(res.message || "Result deleted successfully!");
+        } else {
+          alert(res.message || "Failed to delete result");
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+        alert("Failed to delete result!");
+      }
+    });
   };
 
   return (
     <div className="space-y-8 pb-10 animate-in fade-in duration-500">
       
-      {/* 🌟 Header Section */}
+      {/* Header Section */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-emerald-50">
           Result Publishing
@@ -98,7 +122,7 @@ export default function ResultManagementPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         
-        {/* 📝 Create / Update Form (Left Side) */}
+        {/* Create / Update Form (Left Side) */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -173,14 +197,16 @@ export default function ResultManagementPage() {
                 <div className="pt-2 flex gap-3">
                   <Button 
                     type="submit" 
+                    disabled={loading || isPending}
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
                   >
-                    {isEditing ? "Update Result" : "Publish Result"}
+                    {(loading || isPending) ? <Loader2 className="animate-spin h-5 w-5" /> : (isEditing ? "Update Result" : "Publish Result")}
                   </Button>
                   {isEditing && (
                     <Button 
                       type="button" 
                       variant="outline" 
+                      disabled={loading || isPending}
                       onClick={() => { setIsEditing(false); setFormData({ id: "", examName: "", batch: "", examDate: "", resultLink: "" }); }}
                       className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
                     >
@@ -193,7 +219,7 @@ export default function ResultManagementPage() {
           </Card>
         </motion.div>
 
-        {/* 📋 Data Table (Right Side) */}
+        {/* Data Table (Right Side) */}
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -204,7 +230,8 @@ export default function ResultManagementPage() {
               <div>
                 <CardTitle className="text-slate-800 dark:text-emerald-100">Published Results</CardTitle>
                 <CardDescription className="dark:text-slate-400 mt-1">
-                  সর্বমোট {results.length} টি পরীক্ষার ফলাফল প্রকাশ করা হয়েছে।
+                  {/* এখানে সেফলি length চেক করা হয়েছে */}
+                  সর্বমোট {results?.length || 0} টি পরীক্ষার ফলাফল প্রকাশ করা হয়েছে।
                 </CardDescription>
               </div>
               <div className="relative w-full sm:w-64">
@@ -228,17 +255,16 @@ export default function ResultManagementPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {results.length === 0 ? (
+                    {!results || results.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={4} className="h-32 text-center text-slate-500 dark:text-slate-400">
-                          এখনো কোনো ফলাফল প্রকাশ করা হয়নি।
+                          এখনো কোনো ফলাফল প্রকাশ করা হয়নি।
                         </TableCell>
                       </TableRow>
                     ) : (
                       results.map((res) => (
                         <TableRow key={res.id} className="border-slate-100 dark:border-emerald-900/30 dark:hover:bg-emerald-950/20">
                           
-                          {/* Exam Details */}
                           <TableCell className="font-medium text-slate-700 dark:text-emerald-50">
                             <div className="flex items-center gap-2.5">
                               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400">
@@ -248,7 +274,6 @@ export default function ResultManagementPage() {
                             </div>
                           </TableCell>
                           
-                          {/* Batch Badge */}
                           <TableCell className="text-slate-600 dark:text-slate-300">
                             <div className="flex items-center gap-1.5 whitespace-nowrap">
                               <Users className="h-3.5 w-3.5 text-slate-400" />
@@ -258,7 +283,6 @@ export default function ResultManagementPage() {
                             </div>
                           </TableCell>
 
-                          {/* Date */}
                           <TableCell className="text-slate-600 dark:text-slate-300">
                              <div className="flex items-center gap-1.5 whitespace-nowrap text-sm">
                               <Calendar className="h-3.5 w-3.5 text-slate-400" />
@@ -266,7 +290,6 @@ export default function ResultManagementPage() {
                             </div>
                           </TableCell>
                           
-                          {/* Actions */}
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1 sm:gap-2">
                               <Button 

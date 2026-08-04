@@ -31,22 +31,20 @@ interface ActionResponse {
   data?: unknown;
 }
 
-// 1. Create PDF Action
-export async function createPdf(formData: FormData): Promise<ActionResponse> {
-  console.log("[Action] createPdf called 🚀");
+// 1. Create Result Action
+export async function createResult(formData: FormData): Promise<ActionResponse> {
+  console.log("[Action] createResult called 🚀");
   try {
-    const title = formData.get("title");
-    const subject = formData.get("subject");
-    const className = formData.get("className");
-    const link = formData.get("link");
-    const image = formData.get("image");
+    const examName = formData.get("examName");
+    const batch = formData.get("batch");
+    const examDate = formData.get("examDate");
+    const resultLink = formData.get("resultLink");
 
     const payload = {
-      title: title ? String(title).trim() : "",
-      subject: subject ? String(subject).trim() : "",
-      className: className ? String(className).trim() : "",
-      pdfUrl: link ? String(link).trim() : "", 
-      image: image ? String(image).trim() : null,
+      examName: examName ? String(examName).trim() : "",
+      batch: batch ? String(batch).trim() : "",
+      examDate: examDate ? String(examDate).trim() : "",
+      resultLink: resultLink ? String(resultLink).trim() : "",
     };
 
     const accessToken = await isAccessTokenExist();
@@ -54,7 +52,7 @@ export async function createPdf(formData: FormData): Promise<ActionResponse> {
       return { success: false, message: "User not logged in!" };
     }
 
-    const backendUrl = `${process.env.BACKEND_API_URL}/api/pdf`;
+    const backendUrl = `${process.env.BACKEND_API_URL}/api/results`; // আপনার ব্যাকএন্ড রাউট অনুযায়ী পরিবর্তন করতে পারেন
 
     const response = await fetch(backendUrl, {
       method: "POST",
@@ -68,7 +66,7 @@ export async function createPdf(formData: FormData): Promise<ActionResponse> {
 
     const result = (await handleApiResponse(response)) as ActionResponse;
     if (result.success) {
-      revalidateTag("pdfs", "max"); // দুটি আর্গুমেন্ট পাস করা হলো
+      revalidateTag("results", "max");
     }
     return result;
   } catch (error: unknown) {
@@ -77,17 +75,17 @@ export async function createPdf(formData: FormData): Promise<ActionResponse> {
   }
 }
 
-// 2. Get PDFs Action
-export const getPdfs = async () => {
+// 2. Get Results Action
+export const getResults = async () => {
   const accessToken = await isAccessTokenExist();
   
   if (!accessToken) {
-    console.error("[Action] getPdfs Error: User not logged in!");
+    console.error("[Action] getResults Error: User not logged in!");
     return { success: false, message: "User not logged in!", data: [] };
   }
 
   try {
-    const backendUrl = `${process.env.BACKEND_API_URL}/api/pdf`;
+    const backendUrl = `${process.env.BACKEND_API_URL}/api/results`;
 
     const res = await fetch(backendUrl, {
       method: "GET",
@@ -97,39 +95,38 @@ export const getPdfs = async () => {
         Cookie: `accessToken=${accessToken}`,
       },
       next: {
-        tags: ["pdfs"]
+        tags: ["results"]
       }
     });
 
     const result = await handleApiResponse(res);
     return result;
   } catch (error) {
-    console.error("[Action] getPdfs Exception Error:", error);
+    console.error("[Action] getResults Exception Error:", error);
     return { success: false, message: "Failed to connect to the backend server!", data: [] };
   }
 };
 
-// 3. Update PDF Action
-export const updatePdf = async (id: string, formData: FormData): Promise<ActionResponse> => {
-  console.log(`[Action] updatePdf called for ID: ${id} 📝`);
+// 3. Update Result Action
+export const updateResult = async (id: string, formData: FormData): Promise<ActionResponse> => {
+  console.log(`[Action] updateResult called for ID: ${id} 📝`);
   
   const payload = {
-    title: String(formData.get("title") || "").trim(),
-    subject: String(formData.get("subject") || "").trim(),
-    className: String(formData.get("className") || "").trim(),
-    pdfUrl: String(formData.get("link") || "").trim(), 
-    image: String(formData.get("image") || "").trim() || null,
+    examName: String(formData.get("examName") || "").trim(),
+    batch: String(formData.get("batch") || "").trim(),
+    examDate: String(formData.get("examDate") || "").trim(),
+    resultLink: String(formData.get("resultLink") || "").trim(),
   };
 
   const accessToken = await isAccessTokenExist();
 
   if (!accessToken) {
-    console.error("[Action] updatePdf Error: User not logged in!");
+    console.error("[Action] updateResult Error: User not logged in!");
     return { success: false, message: "User not logged in!" };
   }
 
   try {
-    const backendUrl = `${process.env.BACKEND_API_URL}/api/pdf/${id}`;
+    const backendUrl = `${process.env.BACKEND_API_URL}/api/results/${id}`;
 
     const res = await fetch(backendUrl, {
       method: "PUT",
@@ -144,18 +141,18 @@ export const updatePdf = async (id: string, formData: FormData): Promise<ActionR
     const result = await handleApiResponse(res) as ActionResponse;
     
     if (result.success) {
-      revalidateTag("pdfs", "max"); // দুটি আর্গুমেন্ট পাস করা হলো
+      revalidateTag("results", "max");
     }
     return result;
   } catch (error) {
-    console.error("[Action] updatePdf Exception Error:", error);
+    console.error("[Action] updateResult Exception Error:", error);
     return { success: false, message: "Failed to connect to the backend server!" };
   }
 };
 
-// 4. Delete PDF Action
-export const deletePdf = async (id: string): Promise<ActionResponse> => {
-  console.log(`[Action] deletePdf called for ID: ${id} 🗑️`);
+// 4. Delete Result Action
+export const deleteResult = async (id: string): Promise<ActionResponse> => {
+  console.log(`[Action] deleteResult called for ID: ${id} 🗑️`);
   const accessToken = await isAccessTokenExist();
 
   if (!accessToken) {
@@ -163,7 +160,7 @@ export const deletePdf = async (id: string): Promise<ActionResponse> => {
   }
 
   try {
-    const backendUrl = `${process.env.BACKEND_API_URL}/api/pdf/${id}`;
+    const backendUrl = `${process.env.BACKEND_API_URL}/api/results/${id}`;
 
     const res = await fetch(backendUrl, {
       method: "DELETE",
@@ -177,7 +174,7 @@ export const deletePdf = async (id: string): Promise<ActionResponse> => {
     const result = await handleApiResponse(res) as ActionResponse;
 
     if (result.success) {
-      revalidateTag("pdfs", "max"); // দুটি আর্গুমেন্ট পাস করা হলো
+      revalidateTag("results", "max");
     }
     return result;
   } catch (error) {
