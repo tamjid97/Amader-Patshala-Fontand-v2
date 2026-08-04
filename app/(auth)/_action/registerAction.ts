@@ -1,55 +1,73 @@
-"use server"
+"use server";
 
-import { isAccessTokenExist } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/batchTime";
 import { revalidateTag } from "next/cache";
 
-type PostState = {
+type RegisterResponse = {
   success: boolean;
   statusCode: number;
   message: string;
   data: Record<string, unknown>;
-}
+};
 
-export const registerUser = async (prevState: PostState, formData: FormData) => {
-  const accessToken = await isAccessTokenExist();
+export const registerUser = async (prevState: RegisterResponse, formData: FormData) => {
+  // FormData থেকে ফিল্ডগুলো সংগ্রহ করা
+  const name = formData.get("name")?.toString().trim();
+  const phoneNumber = formData.get("phoneNumber")?.toString().trim();
+  const password = formData.get("password")?.toString();
+  const userClass = formData.get("class")?.toString().trim();
+  const institute = formData.get("institute")?.toString().trim();
+  const profilePicture = formData.get("profilePicture")?.toString().trim();
+
+  // ব্যাকএন্ডের চাহিদামতো পেলোড তৈরি
+  const payload: Record<string, string> = {
+    name: name || "",
+    phoneNumber: phoneNumber || "",
+    password: password || "",
+    class: userClass || "",
+    institute: institute || "",
+  };
+
+  if (profilePicture) {
+    payload.profilePicture = profilePicture;
+  }
+
+  const backendBaseUrl = process.env.BACKEND_API_URL || "https://amader-patshal-backend.vercel.app";
 
   try {
-    const res = await fetch(`${process.env.BACKEND_API_URL}/api/auth/register`, {
+    const res = await fetch(`${backendBaseUrl}/api/auth/register`, {
       method: "POST",
       headers: {
-        cookie: `accessToken=${accessToken}`,
+        "Content-Type": "application/json",
       },
-      body: formData,
+      body: JSON.stringify(payload),
     });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Backend Error:", errorText);
-      return {
-        success: false,
-        statusCode: res.status,
-        message: "Backend server returned an error.",
-        data: {}
-      };
-    }
 
     const result = await res.json();
 
-    if (result.success) {
-      // revalidate.d.ts এর টাইপ অনুযায়ী দ্বিতীয় আর্গুমেন্ট পাস করা হলো
-      revalidateTag("register", undefined as unknown as never); 
+    if (res.ok && (result.success || res.status === 201)) {
+      revalidateTag("register", undefined as unknown as never);
+      return {
+        success: true,
+        statusCode: result.statusCode || 201,
+        message: result.message || "User registered successfully",
+        data: result.data || {},
+      };
     }
 
-    return result;
+    return {
+      success: false,
+      statusCode: result.statusCode || res.status,
+      message: result.message || "Registration failed",
+      data: {},
+    };
 
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Something went wrong in the server.";
-    console.error("Server Action Fetch Error:", error);
+    console.error("Register Server Action Error:", error);
     return {
       success: false,
       statusCode: 500,
-      message: errorMessage,
-      data: {}
+      message: "Network or Server error.",
+      data: {},
     };
   }
 };

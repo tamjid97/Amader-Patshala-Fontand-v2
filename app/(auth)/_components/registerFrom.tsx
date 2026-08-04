@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { 
   Eye, EyeOff, User, Phone, 
-  School, GraduationCap, Dna, Lock, Camera 
+  School, GraduationCap, Dna, Lock, Image as ImageIcon 
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
@@ -45,18 +45,7 @@ function SubmitButton() {
 
 export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  const [profilePicUrl, setProfilePicUrl] = useState("");
 
   const initialState = {
     success: false,
@@ -112,43 +101,29 @@ export default function RegisterForm() {
               </div>
             )}
 
-            {/* Profile Image Input */}
+            {/* Profile Image Preview */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.3 }}
               className="mb-6 flex flex-col items-center justify-center space-y-2"
             >
-              <div className="relative group">
-                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-emerald-500/50 bg-emerald-50/50 shadow-md transition-all group-hover:border-emerald-500 dark:bg-slate-900/50">
-                  {imagePreview ? (
-                    <img 
-                      src={imagePreview} 
-                      alt="Profile Preview" 
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <User className="h-10 w-10 text-emerald-600/60 dark:text-emerald-400/60" />
-                  )}
-                </div>
-
-                <label 
-                  htmlFor="profilePicture" 
-                  className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
-                >
-                  <Camera className="h-4 w-4" />
-                  <input
-                    id="profilePicture"
-                    name="profilePicture"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
+              <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-emerald-500/50 bg-emerald-50/50 shadow-md dark:bg-slate-900/50">
+                {profilePicUrl ? (
+                  <img 
+                    src={profilePicUrl} 
+                    alt="Profile Preview" 
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "";
+                    }}
                   />
-                </label>
+                ) : (
+                  <User className="h-10 w-10 text-emerald-600/60 dark:text-emerald-400/60" />
+                )}
               </div>
               <span className="text-xs text-slate-500 dark:text-slate-400">
-                Upload Profile Picture
+                Profile Preview
               </span>
             </motion.div>
 
@@ -226,6 +201,25 @@ export default function RegisterForm() {
                     type="text"
                     placeholder="12"
                     required
+                    className="pl-10 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/50"
+                  />
+                </div>
+              </motion.div>
+
+              {/* Profile Picture URL */}
+              <motion.div variants={itemVariants} className="space-y-2 md:col-span-2">
+                <Label htmlFor="profilePicture" className="text-slate-700 dark:text-slate-300">
+                  Profile Picture URL (Optional)
+                </Label>
+                <div className="relative group">
+                  <ImageIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500" />
+                  <Input
+                    id="profilePicture"
+                    name="profilePicture"
+                    type="url"
+                    placeholder="https://example.com/photo.jpg"
+                    value={profilePicUrl}
+                    onChange={(e) => setProfilePicUrl(e.target.value)}
                     className="pl-10 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/50"
                   />
                 </div>
