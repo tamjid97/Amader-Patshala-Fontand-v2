@@ -7,42 +7,42 @@ import { motion, AnimatePresence } from 'framer-motion'
 const testimonials = [
   { 
     id: 1,
-    name: "M.D Tausif",
-    role: "Dhaka University",
-    text: "গর্বের সাথে বলতে পারি, এই এলাকায় এটি অন্যতম সেরা ব্যাচ। খুলনা সিটিতে সেরা সার্ভিস।", 
+    name: "মহিম হাসান বাঁধন",
+    role: "Khulna Public College",
+    text: "জীববিজ্ঞানের জটিল ও গূঢ় বিষয়গুলো এখানে পড়ার পর জলের মতো সহজ হয়ে গেছে। শুধু সিলেবাস শেষ করাই নয়, স্যারের হাতে-কলমে বোঝানোর কৌশলটি শিক্ষার্থীদের বিষয়টির গভীরে নিয়ে যায়। আমার মতে, বায়োলজিকে ভালোবাসতে শেখার জন্য এটিই সেরা শিক্ষালয়।", 
     rating: 5,
     location: 'Khulna',
-    img: '/sir 1.jpeg',
+    img: '/review/badon.jpeg',
     avatarBg: 'from-emerald-400 to-emerald-600'
   },
   { 
     id: 2,
-    name: "Abdullah Al",
-    role: "Khulna University",
-    text: "To get a good grade in biology you need to have a clear concept. If you can't do a good result, try here. One of the best coaching in the city.", 
+    name: "শারাফাত",
+    role: "Khulna Public College",
+    text: "এখানে পড়ার পর বুঝতে পেরেছি, ভালো রেজাল্টের জন্য শুধুমাত্র বই পড়াই যথেষ্ট নয়, প্রয়োজন সঠিক গাইডলাইন এবং অনুকূল পরিবেশ। সেই নিরবচ্ছিন্ন গাইডলাইন ও মেন্টরশিপ আমি এই ব্যাচ থেকে পেয়েছি। সত্যিই অতুলনীয় একটি অভিজ্ঞতা।", 
     rating: 5,
     location: 'Khulna',
-    img: '/sir2.jpg',
+    img: '/review/shafet.jpeg',
     avatarBg: 'from-emerald-500 to-green-600'
   },
   { 
     id: 3,
-    name: "Tanvir Ahmed",
-    role: "BUET",
-    text: "পড়াশোনার পরিবেশ এবং গাইডলাইন সত্যি অতুলনীয়। ভাইয়ার বায়োলজি পড়ানোর কৌশল দারুণ।", 
+    name: "ইয়াফিজুল",
+    role: "Khulna Public College",
+    text: "স্যারের মতো করে বায়োলজিকে সহজবোধ্য করে কেউ বুঝাতে পারে বলে আমার জানা নেই। প্রতিটি লেকচার এতোটাই আকর্ষণীয় হয় যে, ক্লাসে মনোযোগ ধরে রাখা অনেক সহজ হয়ে যায়। আমার একাডেমিক ভিত্তি শক্ত করার পেছনে এই ব্যাচের অবদান অপরিসীম।", 
     rating: 5,
-    location: 'Dhaka',
-    img: '/sir 1.jpeg', 
+    location: 'Khulna',
+    img: '/review/yefaz.jpeg', 
     avatarBg: 'from-emerald-400 to-teal-500'
   },
   { 
     id: 4,
-    name: "Nusrat Jahan",
-    role: "Medical College",
-    text: "বায়োলজি কঠিন লাগতো, কিন্তু এখানে পড়ার পর বিষয়টি পানির মতো সহজ হয়ে গেছে।", 
+    name: "মাহাদী",
+    role: "BL College (Ex হাজী মোহাম্মদ মহসিন বয়েস)", 
+    text: "ভীতিকর বায়োলজি এখন আমার কাছে আনন্দের বিষয়। নিয়মিত পরীক্ষা ও ফিডব্যাক সিস্টেম আমার প্রস্তুতিকে অনেক জোরদার করেছে। যারা বায়োলজিতে ভালো ফলাফল নিয়ে চিন্তিত, আমি নির্দ্বিধায় তাদের এই সেরা কোচিং সেন্টারে যোগ দেওয়ার পরামর্শ দেবো।", 
     rating: 5,
     location: 'Khulna',
-    img: '/sir2.jpg', 
+    img: '/review/madahi.jpeg', 
     avatarBg: 'from-green-400 to-emerald-600'
   }
 ]
@@ -126,7 +126,7 @@ export default function ReviewsSection() {
                   transition={{ delay: index * 0.1 }}
                   onClick={() => {
                     setActiveIndex(index);
-                    setIsAutoPlaying(false); // ক্লিক করলে অটো-প্লে সাময়িক বন্ধ হবে
+                    setIsAutoPlaying(false);
                   }}
                   onMouseLeave={() => setIsAutoPlaying(true)}
                   className={`group relative cursor-pointer p-4 sm:p-5 rounded-2xl transition-all duration-500 flex items-center justify-between border overflow-hidden ${
@@ -135,7 +135,6 @@ export default function ReviewsSection() {
                       : 'bg-white/30 dark:bg-slate-900/30 border-slate-200/50 dark:border-slate-800/50 hover:border-emerald-500/30 hover:bg-white/60 dark:hover:bg-slate-800/60'
                   }`}
                 >
-                  {/* Active Progress Bar indicator */}
                   {isActive && (
                     <motion.div 
                       layoutId="activeHighlight"
@@ -174,7 +173,6 @@ export default function ReviewsSection() {
                     <ArrowRight className="h-5 w-5" />
                   </div>
 
-                  {/* 4-Second Animated Progress Bar on Active Item */}
                   {isActive && isAutoPlaying && (
                     <motion.div 
                       initial={{ width: "0%" }}
@@ -197,19 +195,16 @@ export default function ReviewsSection() {
                 animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
                 exit={{ opacity: 0, x: -20, filter: 'blur(10px)' }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                className="relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-700/50 rounded-[3rem] p-8 sm:p-14 shadow-[0_30px_60px_-15px_rgba(16,185,129,0.15)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden group"
+                className="relative bg-white/70 dark:bg-slate-900/60 backdrop-blur-2xl border border-white/60 dark:border-slate-700/50 rounded-[3rem] p-8 sm:p-12 shadow-[0_30px_60px_-15px_rgba(16,185,129,0.15)] dark:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden group"
               >
-                {/* Beautiful Inner Ring */}
                 <div className="absolute inset-0 rounded-[3rem] ring-1 ring-inset ring-emerald-500/10 pointer-events-none"></div>
 
-                {/* Decorative Premium Quote Icon */}
                 <div className="absolute -top-6 -right-6 text-emerald-500/5 dark:text-emerald-400/5 pointer-events-none transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-12">
                   <Quote className="h-64 w-64 rotate-180" />
                 </div>
 
                 <div className="relative z-10">
-                  {/* Rating Stars & Verified Badge */}
-                  <div className="flex flex-wrap gap-4 items-center justify-between mb-10">
+                  <div className="flex flex-wrap gap-4 items-center justify-between mb-8">
                     <div className="flex gap-1">
                       {[...Array(activeTestimonial.rating)].map((_, i) => (
                         <motion.div 
@@ -218,7 +213,7 @@ export default function ReviewsSection() {
                           transition={{ delay: i * 0.1, type: "spring" }}
                           key={i}
                         >
-                          <Star className="h-6 w-6 text-amber-400 fill-amber-400 drop-shadow-sm" />
+                          <Star className="h-5 w-5 text-amber-400 fill-amber-400 drop-shadow-sm" />
                         </motion.div>
                       ))}
                     </div>
@@ -228,35 +223,32 @@ export default function ReviewsSection() {
                     </div>
                   </div>
 
-                  {/* Main Review Quote */}
-                  <p className="text-2xl sm:text-3xl md:text-4xl font-semibold text-slate-800 dark:text-slate-100 mb-12 leading-[1.6] tracking-tight">
+                  {/* Main Review Quote - Adjusted to smaller readable size */}
+                  <p className="text-lg sm:text-xl md:text-2xl font-semibold text-slate-800 dark:text-slate-100 mb-8 leading-[1.7] tracking-tight">
                     "{activeTestimonial.text}"
                   </p>
 
-                  {/* Author Details Footer */}
-                  <div className="flex items-center gap-5 pt-8 border-t border-slate-200/60 dark:border-slate-700/60">
-                    
-                    {/* Glowing Avatar */}
+                  <div className="flex items-center gap-5 pt-6 border-t border-slate-200/60 dark:border-slate-700/60">
                     <div className="relative">
                       <div className="absolute -inset-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500"></div>
                       {activeTestimonial.img ? (
                         <img 
                           src={activeTestimonial.img} 
                           alt={activeTestimonial.name} 
-                          className="relative h-16 w-16 rounded-full object-cover border-2 border-white dark:border-slate-800" 
+                          className="relative h-14 w-14 rounded-full object-cover border-2 border-white dark:border-slate-800" 
                         />
                       ) : (
-                        <div className={`relative h-16 w-16 rounded-full bg-gradient-to-br ${activeTestimonial.avatarBg} flex items-center justify-center font-black text-white text-3xl border-2 border-white dark:border-slate-800`}>
+                        <div className={`relative h-14 w-14 rounded-full bg-gradient-to-br ${activeTestimonial.avatarBg} flex items-center justify-center font-black text-white text-2xl border-2 border-white dark:border-slate-800`}>
                           {activeTestimonial.name.charAt(0)}
                         </div>
                       )}
                     </div>
 
                     <div>
-                      <h3 className="font-extrabold text-xl text-slate-900 dark:text-white mb-1">
+                      <h3 className="font-extrabold text-lg text-slate-900 dark:text-white mb-0.5">
                         {activeTestimonial.name}
                       </h3>
-                      <p className="text-sm text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest">
+                      <p className="text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest">
                         {activeTestimonial.role} <span className="text-slate-400 dark:text-slate-500 font-normal ml-1 capitalize">• {activeTestimonial.location}</span>
                       </p>
                     </div>

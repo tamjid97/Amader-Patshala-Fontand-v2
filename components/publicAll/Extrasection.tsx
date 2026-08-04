@@ -16,7 +16,7 @@ export default function Extrasection() {
 
   // শেষের ৪টি ছবি (Row 2 এর জন্য)
   const rowTwoImages = [
-    { name: "Initiative 5", src: "/socialPic/5.jpeg" },
+    { name: "Initiative 5", src: "/socialPic/11.jpeg" },
     { name: "Initiative 6", src: "/socialPic/6.jpeg" },
     { name: "Initiative 7", src: "/socialPic/7.jpeg" },
     { name: "Initiative 8", src: "/socialPic/55.jpeg" },
