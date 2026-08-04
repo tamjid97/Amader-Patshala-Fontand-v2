@@ -10,8 +10,8 @@ import { ThemeProvider } from '@/components/ui/theme-provider';
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
-  title: 'Roots Of Biology — Best Biology Coaching in Khulna | By S M Tamjid Hossain Epick',
-  description: 'Roots Of Biology is a premier biology coaching center and research dashboard in Khulna, developed by S M Tamjid Hossain Epick (epickdev).',
+  title: 'Roots Of Biology — Best Biology Batch in Khulna',
+  description: 'Roots Of Biology is a premier biology Batch  and research dashboard in Khulna, developed by S M Tamjid Hossain Epick.',
   
   generator: 'epickdev',
   authors: [{ name: 'S M Tamjid Hossain Epick', url: 'https://epickdev.vercel.app' }],
