@@ -4,6 +4,12 @@ import React, { useState, useEffect } from "react";
 import { Search, FileText, Sparkles, Dna, GraduationCap, Users, Calendar, Lock, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPdfs } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/pdf";
+import { getMe } from "../_acttion/profile";
+
+// ==============================================================================
+// 🚨 [১. ইমপোর্ট স্থান] ব্যাকএন্ড থেকে ইউজার তথ্য আনার অ্যাকশন ইমপোর্ট
+// ==============================================================================
+
 
 const BACKGROUND_ELEMENTS = [
   { top: 12, left: 10, xOffset: -15, duration: 9 },
@@ -125,31 +131,47 @@ interface IPdf {
 
 export default function PdfPage() {
   const [pdfs, setPdfs] = useState<IPdf[]>([]);
+  
+  // ==============================================================================
+  // 🚨 [২. স্টেট ডিক্লেয়ারেশন] পাওয়া ইউজারের রোল জমা রাখার স্টেট
+  // ==============================================================================
   const [userRole, setUserRole] = useState<string | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"HSC" | "SSC">("HSC");
-  
-  // মডাল কন্ট্রোল করার জন্য স্টেট
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       try {
+
+        // ==============================================================================
+        // 🚨 [৩. ডাটা কল করার মূল লাইন]
+        // getMe() কলের মাধ্যমে সার্ভার থেকে লগইন থাকা ইউজারের ডাটা আনা হচ্ছে
+        // ==============================================================================
         const [pdfResponse, userResponse] = await Promise.all([
           getPdfs(),
-          fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://amader-patshal-backend.vercel.app"}/api/auth/me`, {
-            credentials: "include"
-          }).then(res => res.json()).catch(() => null)
+          getMe(), // 🔥🔥🔥 এই লাইনে ইউজারের তথ্য ব্যাকএন্ড থেকে ফেচ করা হচ্ছে
         ]);
 
-        // 🌟 মডিফাইড ইউজার রোল চেক
-        if (userResponse?.success) {
-          console.log("API User Response:", userResponse); // ডিবাগ করার জন্য
-          // API এর রেসপন্স যে ফরম্যাটেই আসুক, রোলটা বের করে আনবে
-          const fetchedRole = userResponse?.data?.role || userResponse?.data?.user?.role || userResponse?.role;
+        console.log("DEBUG - getMe Raw Response:", userResponse);
+
+        // ==============================================================================
+        // 🚨 [৪. ইউজার রোল এক্সট্রাক্ট করা]
+        // ব্যাকএন্ডের রেসপন্স অবজেক্ট থেকে ইউজারের Role (যেমন: STUDENT, ADMIN) বের করা
+        // ==============================================================================
+        if (userResponse) {
+          const fetchedRole = 
+            userResponse?.data?.role || 
+            userResponse?.data?.user?.role || 
+            userResponse?.user?.role || 
+            userResponse?.role; // 🔥 ইউজারের রোল ডাটা অবজেক্ট থেকে খুঁজে বের করা হচ্ছে
+
+          console.log("DEBUG - Extracted Role:", fetchedRole);
+
           if (fetchedRole) {
-            setUserRole(fetchedRole);
+            setUserRole(fetchedRole); // 🔥 ইউজারের রোল স্টেটে সেভ করা হচ্ছে
           }
         }
 
@@ -195,8 +217,13 @@ export default function PdfPage() {
     return <GlobalLoading />;
   }
 
-  // 🌟 পিডিএফ বাটনের জন্য এলিজিবিলিটি চেক ফাংশন
-  const hasAccess = ["STUDENT", "ADMIN", "MODERATOR"].includes(userRole?.toUpperCase()?.trim() || "");
+  // ==============================================================================
+  // 🚨 [৫. পারমিশন ভ্যালিডেশন]
+  // ইউজার পিডিএফ দেখার যোগ্য কি না (STUDENT, ADMIN, MODERATOR, USER রোল আছে কি না) তা চেক
+  // ==============================================================================
+  const hasAccess = ["STUDENT", "ADMIN", "MODERATOR", "USER"].includes(
+    userRole?.toUpperCase()?.trim() || ""
+  );
 
   return (
     <div className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden">
@@ -327,8 +354,10 @@ export default function PdfPage() {
                     {pdf.title}
                   </h3>
 
-                  {/* 🌟 আপডেটেড বাটন লজিক: Student, Admin, Moderator সবাই এক্সেস পাবে */}
                   {pdf.pdfUrl && (
+                    /* ==============================================================================
+                       🚨 [৬. ভিউ রেন্ডারিং] ইউজারের Access (hasAccess) অনুযায়ী বাটন দেখানো
+                       ============================================================================== */
                     hasAccess ? (
                       <a
                         href={pdf.pdfUrl}
@@ -369,11 +398,9 @@ export default function PdfPage() {
 
       </div>
 
-      {/* 🌟 কাস্টম প্রিমিয়াম মডাল (Modal) */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-            {/* ব্যাকগ্রাউন্ড ব্লার ওভারলে */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -382,7 +409,6 @@ export default function PdfPage() {
               className="absolute inset-0 bg-black/70 backdrop-blur-md"
             />
 
-            {/* মডাল কন্টেন্ট বক্স */}
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -390,7 +416,6 @@ export default function PdfPage() {
               transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
               className="relative w-full max-w-md bg-white dark:bg-[#06140f] border border-emerald-200 dark:border-emerald-900/80 rounded-[2.5rem] shadow-2xl p-8 text-center space-y-6 z-10"
             >
-              {/* ক্লোজ বাটন */}
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="absolute top-5 right-5 p-2 rounded-full bg-slate-100 dark:bg-emerald-950/50 text-slate-500 dark:text-emerald-300 hover:bg-slate-200 dark:hover:bg-emerald-900 transition-colors"
@@ -399,12 +424,10 @@ export default function PdfPage() {
                 <X className="w-5 h-5" />
               </button>
 
-              {/* আইকন */}
               <div className="w-20 h-20 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner border border-red-200 dark:border-red-900/40">
                 <Lock className="w-10 h-10" />
               </div>
 
-              {/* টেক্সট মেসেজ */}
               <div className="space-y-2">
                 <h3 className="text-2xl font-black text-slate-900 dark:text-emerald-50 tracking-tight">
                   অ্যাক্সেস সীমিত (Restricted)
@@ -414,7 +437,6 @@ export default function PdfPage() {
                 </p>
               </div>
 
-              {/* অ্যাকশন বাটন */}
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(16,185,129,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
