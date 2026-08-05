@@ -164,7 +164,7 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
   } else if (role === "MODERATOR") {
     menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/moderator_dashbord" });
   } else if (role === "USER") {
-    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" });
+    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "user_dashboard" });
   }
 
   menuItems.push({ label: "Notifications", icon: Bell, href: "/coming-soon" });
