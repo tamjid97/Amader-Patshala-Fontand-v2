@@ -143,8 +143,14 @@ export default function PdfPage() {
           }).then(res => res.json()).catch(() => null)
         ]);
 
-        if (userResponse?.success && userResponse?.data?.role) {
-          setUserRole(userResponse.data.role);
+        // 🌟 মডিফাইড ইউজার রোল চেক
+        if (userResponse?.success) {
+          console.log("API User Response:", userResponse); // ডিবাগ করার জন্য
+          // API এর রেসপন্স যে ফরম্যাটেই আসুক, রোলটা বের করে আনবে
+          const fetchedRole = userResponse?.data?.role || userResponse?.data?.user?.role || userResponse?.role;
+          if (fetchedRole) {
+            setUserRole(fetchedRole);
+          }
         }
 
         const rawData = Array.isArray(pdfResponse) ? pdfResponse : pdfResponse?.data;
@@ -188,6 +194,9 @@ export default function PdfPage() {
   if (loading) {
     return <GlobalLoading />;
   }
+
+  // 🌟 পিডিএফ বাটনের জন্য এলিজিবিলিটি চেক ফাংশন
+  const hasAccess = ["STUDENT", "ADMIN", "MODERATOR"].includes(userRole?.toUpperCase()?.trim() || "");
 
   return (
     <div className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden">
@@ -318,9 +327,9 @@ export default function PdfPage() {
                     {pdf.title}
                   </h3>
 
-                  {/* 🌟 স্টুডেন্ট হলে সবুজ বাটন, অন্য রোল হলে লাল বাটন যা ক্লিক করলে মডাল ওপেন হবে */}
+                  {/* 🌟 আপডেটেড বাটন লজিক: Student, Admin, Moderator সবাই এক্সেস পাবে */}
                   {pdf.pdfUrl && (
-                    userRole?.toUpperCase() === "STUDENT" ? (
+                    hasAccess ? (
                       <a
                         href={pdf.pdfUrl}
                         target="_blank"
@@ -401,7 +410,7 @@ export default function PdfPage() {
                   অ্যাক্সেস সীমিত (Restricted)
                 </h3>
                 <p className="text-slate-600 dark:text-emerald-200/80 text-sm font-semibold leading-relaxed px-2">
-                  পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।
+                  পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।
                 </p>
               </div>
 
