@@ -10,7 +10,10 @@ type RegisterResponse = {
   data: Record<string, unknown>;
 };
 
-export const registerUser = async (prevState: RegisterResponse, formData: FormData) => {
+export const registerUser = async (
+  prevState: RegisterResponse,
+  formData: FormData,
+) => {
   // FormData থেকে ফিল্ডগুলো সংগ্রহ করা
   const name = formData.get("name")?.toString().trim();
   const phoneNumber = formData.get("phoneNumber")?.toString().trim();
@@ -32,7 +35,8 @@ export const registerUser = async (prevState: RegisterResponse, formData: FormDa
     payload.profilePicture = profilePicture;
   }
 
-  const backendBaseUrl = process.env.BACKEND_API_URL || "https://amader-patshal-backend.vercel.app";
+  const backendBaseUrl =
+    process.env.BACKEND_API_URL || "https://amader-patshal-backend.vercel.app";
 
   try {
     const res = await fetch(`${backendBaseUrl}/api/auth/register`, {
@@ -43,11 +47,26 @@ export const registerUser = async (prevState: RegisterResponse, formData: FormDa
       body: JSON.stringify(payload),
     });
 
+    // রেসপন্সটি সঠিক JSON ফরম্যাটে আছে কি না তা যাচাই করা
+    const contentType = res.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      const htmlText = await res.text();
+      console.error("Non-JSON Server Response during register:", htmlText);
+      return {
+        success: false,
+        statusCode: res.status,
+        message: "Server returned HTML instead of JSON. Check backend URL.",
+        data: {},
+      };
+    }
+
     const result = await res.json();
 
     if (res.ok && (result.success || res.status === 201)) {
-      revalidateTag("register","max");
-      
+      // সঠিক নিয়মে শুধু ট্যাগ পাস করা হয়েছে ("max" বাদ দেওয়া হয়েছে)
+      // এভাবে দ্বিতীয় আর্গুমেন্ট দিয়ে দিন
+      revalidateTag("register", "default");
+
       // রেজিস্ট্রেশন সফল হলে সরাসরি লগইন পেজে রিডাইরেক্ট করবে
       redirect("/login");
     }
@@ -58,7 +77,6 @@ export const registerUser = async (prevState: RegisterResponse, formData: FormDa
       message: result.message || "Registration failed",
       data: {},
     };
-
   } catch (error: unknown) {
     // Next.js এর redirect এক্সসেপশন হ্যান্ডেল করার জন্য সঠিক টাইপ চেক
     if (error instanceof Error && error.message === "NEXT_REDIRECT") {
@@ -69,7 +87,8 @@ export const registerUser = async (prevState: RegisterResponse, formData: FormDa
     return {
       success: false,
       statusCode: 500,
-      message: "Network or Server error.",
+      message:
+        error instanceof Error ? error.message : "Network or Server error.",
       data: {},
     };
   }

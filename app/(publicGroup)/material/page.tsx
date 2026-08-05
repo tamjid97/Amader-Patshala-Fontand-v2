@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, FileText, Sparkles, Dna, GraduationCap, Users, Lock, Calendar } from "lucide-react";
-import { motion } from "framer-motion";
+import { Search, FileText, Sparkles, Dna, GraduationCap, Users, Calendar, Lock, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { getPdfs } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/pdf";
 
 const BACKGROUND_ELEMENTS = [
@@ -125,18 +125,30 @@ interface IPdf {
 
 export default function PdfPage() {
   const [pdfs, setPdfs] = useState<IPdf[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"HSC" | "SSC">("HSC");
-
-  const userRole = "STUDENT"; 
+  
+  // মডাল কন্ট্রোল করার জন্য স্টেট
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    async function fetchPdfs() {
+    async function fetchData() {
       try {
-        const response = await getPdfs();
-        const rawData = Array.isArray(response) ? response : response?.data;
-        if (response?.success && Array.isArray(rawData)) {
+        const [pdfResponse, userResponse] = await Promise.all([
+          getPdfs(),
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_API_URL || "https://amader-patshal-backend.vercel.app"}/api/auth/me`, {
+            credentials: "include"
+          }).then(res => res.json()).catch(() => null)
+        ]);
+
+        if (userResponse?.success && userResponse?.data?.role) {
+          setUserRole(userResponse.data.role);
+        }
+
+        const rawData = Array.isArray(pdfResponse) ? pdfResponse : pdfResponse?.data;
+        if (pdfResponse?.success && Array.isArray(rawData)) {
           const formatted = rawData.map((item: Record<string, unknown>) => ({
             ...(item as unknown as IPdf),
             id: (item._id as string) || (item.id as string) || "",
@@ -150,15 +162,14 @@ export default function PdfPage() {
           setPdfs(formatted);
         }
       } catch (error) {
-        console.error("Error fetching PDFs:", error);
+        console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
       }
     }
-    fetchPdfs();
+    fetchData();
   }, []);
 
-  // ফিল্টারিং লজিক
   const filteredPdfs = pdfs.filter((pdf) => {
     const className = (pdf.className || "").toLowerCase();
     const isSsc = className.includes("ssc") || className.includes("class 9") || className.includes("class 10");
@@ -174,10 +185,6 @@ export default function PdfPage() {
     );
   });
 
-  const handleRestrictedAccess = () => {
-    alert("দুঃখিত! আপনার এই পিডিএফ দেখার অ্যাক্সেস নেই। এটি শুধুমাত্র স্টুডেন্টদের জন্য উন্মুক্ত।");
-  };
-
   if (loading) {
     return <GlobalLoading />;
   }
@@ -185,13 +192,11 @@ export default function PdfPage() {
   return (
     <div className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden">
       
-      {/* ব্যাকগ্রাউন্ড ইফেক্ট */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#10b9810a_1px,transparent_1px),linear-gradient(to_bottom,#10b9810a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-400/10 dark:bg-emerald-600/10 blur-[140px] pointer-events-none rounded-full" />
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-10">
         
-        {/* পেজ হেডার */}
         <div className="flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-top-6 duration-700">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-300/50 dark:border-emerald-800/60 rounded-full mb-4 backdrop-blur-md shadow-sm">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
@@ -211,7 +216,6 @@ export default function PdfPage() {
           </p>
         </div>
 
-        {/* HSC / SSC ট্যাব ফিল্টার */}
         <div className="flex justify-center animate-in fade-in duration-700">
           <div className="flex p-1.5 bg-white/90 dark:bg-[#071712]/90 backdrop-blur-2xl rounded-2xl shadow-xl shadow-emerald-950/10 border border-emerald-100 dark:border-emerald-900/40">
             <button
@@ -240,7 +244,6 @@ export default function PdfPage() {
           </div>
         </div>
 
-        {/* 🌟 প্রিমিয়াম সার্চ বার (যেমনটি আপনি চেয়েছিলেন) */}
         <div className="flex justify-center animate-in fade-in duration-700 mt-6 w-full px-4">
           <div className="relative w-full max-w-3xl group z-20">
             <div className="absolute -inset-1.5 bg-emerald-400/40 dark:bg-emerald-600/30 rounded-full blur-xl group-hover:blur-2xl transition-all duration-500 opacity-70" />
@@ -252,7 +255,7 @@ export default function PdfPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="অধ্যায়ের নাম, বিষয় বা ক্লাস দিয়ে সার্চ করুন..."
+                placeholder="অধ্যায়ের নাম, বিষয় বা ক্লাস দিয়ে সার্চ করুন..."
                 className="w-full bg-transparent text-slate-800 dark:text-emerald-50 placeholder-slate-400 dark:placeholder-emerald-200/50 focus:outline-none font-semibold text-base sm:text-lg px-2"
               />
               <button 
@@ -266,7 +269,6 @@ export default function PdfPage() {
           </div>
         </div>
 
-        {/* পিডিএফ কার্ড গ্রিড (আরও প্রিমিয়াম ও টপে বড় ডেট সহ) */}
         {filteredPdfs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
             {filteredPdfs.map((pdf, index) => (
@@ -275,7 +277,6 @@ export default function PdfPage() {
                 className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 animate-in fade-in slide-in-from-bottom-8 border border-emerald-900/30 bg-slate-900"
                 style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
               >
-                {/* ব্যাকগ্রাউন্ড কভার ইমেজ */}
                 {pdf.image ? (
                   <img 
                     src={pdf.image} 
@@ -288,10 +289,8 @@ export default function PdfPage() {
                   </div>
                 )}
 
-                {/* ডার্ক গ্রেডিয়েন্ট ওভারলে */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/30 group-hover:from-black transition-colors duration-300" />
 
-                {/* 🌟 কার্ডের টপ সেকশন: বড় ও প্রিমিয়াম ডেট এবং ব্যাচ ব্যাজ */}
                 <div className="absolute top-4 inset-x-4 z-10 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
                     <Calendar className="w-3.5 h-3.5 text-emerald-400" />
@@ -307,24 +306,21 @@ export default function PdfPage() {
                   )}
                 </div>
 
-                {/* কার্ডের নিচের কন্টেন্ট */}
                 <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
                   
-                  {/* সাবজেক্ট ক্যাটাগরি */}
                   {pdf.subject && (
                     <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
                       {pdf.subject}
                     </span>
                   )}
 
-                  {/* পিডিএফ টাইটেল */}
                   <h3 className="text-xl font-black text-white tracking-tight drop-shadow-md line-clamp-2">
                     {pdf.title}
                   </h3>
 
-                  {/* পিডিএফ দেখার বাটন */}
+                  {/* 🌟 স্টুডেন্ট হলে সবুজ বাটন, অন্য রোল হলে লাল বাটন যা ক্লিক করলে মডাল ওপেন হবে */}
                   {pdf.pdfUrl && (
-                    userRole === "STUDENT" ? (
+                    userRole?.toUpperCase() === "STUDENT" ? (
                       <a
                         href={pdf.pdfUrl}
                         target="_blank"
@@ -336,11 +332,11 @@ export default function PdfPage() {
                       </a>
                     ) : (
                       <button
-                        onClick={handleRestrictedAccess}
-                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800/90 hover:bg-slate-800 text-slate-300 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] backdrop-blur-md border border-slate-600 transition-all duration-300 cursor-not-allowed"
+                        onClick={() => setIsModalOpen(true)}
+                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                       >
-                        <Lock className="w-4 h-4 text-rose-400" />
-                        Locked (Only Students)
+                        <Lock className="w-4 h-4" />
+                        শুধুমাত্র স্টুডেন্টদের জন্য
                       </button>
                     )
                   )}
@@ -363,6 +359,64 @@ export default function PdfPage() {
         )}
 
       </div>
+
+      {/* 🌟 কাস্টম প্রিমিয়াম মডাল (Modal) */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            {/* ব্যাকগ্রাউন্ড ব্লার ওভারলে */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-black/70 backdrop-blur-md"
+            />
+
+            {/* মডাল কন্টেন্ট বক্স */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", duration: 0.5, bounce: 0.3 }}
+              className="relative w-full max-w-md bg-white dark:bg-[#06140f] border border-emerald-200 dark:border-emerald-900/80 rounded-[2.5rem] shadow-2xl p-8 text-center space-y-6 z-10"
+            >
+              {/* ক্লোজ বাটন */}
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-5 right-5 p-2 rounded-full bg-slate-100 dark:bg-emerald-950/50 text-slate-500 dark:text-emerald-300 hover:bg-slate-200 dark:hover:bg-emerald-900 transition-colors"
+                aria-label="Close Modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* আইকন */}
+              <div className="w-20 h-20 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner border border-red-200 dark:border-red-900/40">
+                <Lock className="w-10 h-10" />
+              </div>
+
+              {/* টেক্সট মেসেজ */}
+              <div className="space-y-2">
+                <h3 className="text-2xl font-black text-slate-900 dark:text-emerald-50 tracking-tight">
+                  অ্যাক্সেস সীমিত (Restricted)
+                </h3>
+                <p className="text-slate-600 dark:text-emerald-200/80 text-sm font-semibold leading-relaxed px-2">
+                  পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।
+                </p>
+              </div>
+
+              {/* অ্যাকশন বাটন */}
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(16,185,129,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+              >
+                বুঝেছি
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

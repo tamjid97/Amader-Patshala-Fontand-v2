@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 
 const BACKEND_URL = "https://amader-patshal-backend.vercel.app";
 
-// মডারেটর রিকোয়েস্টগুলোর ডেটা ফেচ করার জন্য
-export async function fetchModeratorRequestsAction() {
+// সমস্ত ইউজার ফেচ করার জন্য
+export async function fetchAllUsersAction() {
   try {
     const cookieStore = await cookies();
     const accessToken = 
@@ -13,9 +13,7 @@ export async function fetchModeratorRequestsAction() {
       cookieStore.get("token")?.value || 
       cookieStore.get("authToken")?.value;
 
-    console.log("🌐 Fetching moderator requests from backend...");
-
-    const res = await fetch(`${BACKEND_URL}/api/users/requests`, {
+    const res = await fetch(`${BACKEND_URL}/api/users`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -25,17 +23,15 @@ export async function fetchModeratorRequestsAction() {
     });
 
     const data = await res.json();
-    console.log("📦 Backend Response:", data);
-
     return data.data || data;
   } catch (error) {
-    console.error("❌ Error fetching moderator requests:", error);
+    console.error("❌ Error fetching users:", error);
     return [];
   }
 }
 
-// মডারেটর রিকোয়েস্ট Approve বা Reject করার জন্য
-export async function updateRequestStatusAction(id: string, status: string) {
+// ইউজারের স্ট্যাটাস (Active, Banned, Pending ইত্যাদি) আপডেট করার জন্য
+export async function updateUserStatusAction(id: string, status: string) {
   try {
     const cookieStore = await cookies();
     const accessToken = 
@@ -43,7 +39,7 @@ export async function updateRequestStatusAction(id: string, status: string) {
       cookieStore.get("token")?.value || 
       cookieStore.get("authToken")?.value;
 
-    const res = await fetch(`${BACKEND_URL}/api/users/request-status/${id}`, {
+    const res = await fetch(`${BACKEND_URL}/api/users/ban/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -54,11 +50,11 @@ export async function updateRequestStatusAction(id: string, status: string) {
 
     const data = await res.json();
     if (res.ok && (data.success || res.status === 200)) {
-      return { success: true, message: data.message || "Status updated successfully" };
+      return { success: true, message: data.message || "User status updated successfully" };
     }
-    return { success: false, message: data.message || "Failed to update status" };
+    return { success: false, message: data.message || "Failed to update user status" };
   } catch (error) {
-    console.error("❌ Error updating status:", error);
+    console.error("❌ Error updating user status:", error);
     return { success: false, message: "Something went wrong" };
   }
 }

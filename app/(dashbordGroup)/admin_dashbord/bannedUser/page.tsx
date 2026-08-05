@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { motion } from "framer-motion";
 import { 
   Users, 
@@ -11,7 +11,8 @@ import {
   User, 
   UserCheck, 
   RotateCcw,
-  ShieldAlert
+  ShieldAlert,
+  Loader2
 } from "lucide-react";
 
 // Shadcn UI Components
@@ -19,8 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-// ইউজার ডাটা টাইপ
+import { toast } from "sonner";
+import { fetchAllUsersAction, updateUserStatusAction } from "../_action/user";
 interface IUser {
   id: string;
   name: string;
@@ -31,78 +32,96 @@ interface IUser {
   joinedDate: string;
 }
 
-export default function AllUsersPage() {
-  // ডেমো ডাটা
-  const [users, setUsers] = useState<IUser[]>([
-    {
-      id: "1",
-      name: "Tanvir Ahmed",
-      email: "tanvir@example.com",
-      role: "Student",
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80",
-      joinedDate: "2026-07-20"
-    },
-    {
-      id: "2",
-      name: "Sumi Akter",
-      email: "sumi@example.com",
-      role: "Student",
-      status: "Pending",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80",
-      joinedDate: "2026-07-25"
-    },
-    {
-      id: "3",
-      name: "Mahmud Hasan",
-      email: "mahmud@example.com",
-      role: "Moderator",
-      status: "Active",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80",
-      joinedDate: "2026-06-15"
-    },
-    {
-      id: "4",
-      name: "Rakib Hossain",
-      email: "rakib@example.com",
-      role: "Student",
-      status: "Banned",
-      image: "",
-      joinedDate: "2026-05-10"
-    },
-    {
-      id: "5",
-      name: "Nusrat Jahan",
-      email: "nusrat@example.com",
-      role: "Student",
-      status: "Pending",
-      image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80",
-      joinedDate: "2026-07-26"
-    }
-  ]);
+interface IBackendUser {
+  id: string;
+  name?: string;
+  username?: string;
+  email?: string;
+  role?: string;
+  status?: string;
+  isApproved?: string;
+  profilePicture?: string;
+  image?: string;
+  createdAt?: string;
+}
 
+export default function AllUsersPage() {
+  const [users, setUsers] = useState<IUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [isPending, startTransition] = useTransition();
 
-  // 📊 স্ট্যাট কার্ডের জন্য গণনা
+  // ব্যাকএন্ড থেকে ইউজার ডেটা লোড করা
+  useEffect(() => {
+    async function loadUsers() {
+      setIsLoading(true);
+      try {
+        const rawData = await fetchAllUsersAction();
+        const safeData = Array.isArray(rawData) ? rawData : [];
+
+        const formattedUsers: IUser[] = safeData.map((item: IBackendUser) => {
+          let formattedStatus: "Active" | "Pending" | "Banned" = "Active";
+          const st = String(item.status || item.isApproved || "").toUpperCase();
+          if (st === "PENDING") formattedStatus = "Pending";
+          else if (st === "BANNED" || st === "REJECTED") formattedStatus = "Banned";
+          else formattedStatus = "Active";
+
+          let formattedRole: "Student" | "Moderator" | "Admin" = "Student";
+          const r = String(item.role || "").toUpperCase();
+          if (r === "ADMIN") formattedRole = "Admin";
+          else if (r === "MODERATOR") formattedRole = "Moderator";
+          else formattedRole = "Student";
+
+          return {
+            id: item.id,
+            name: item.name || item.username || "Unknown",
+            email: item.email || "N/A",
+            role: formattedRole,
+            status: formattedStatus,
+            image: item.profilePicture || item.image || "",
+            joinedDate: item.createdAt ? new Date(item.createdAt).toISOString().split('T')[0] : "N/A",
+          };
+        });
+
+        setUsers(formattedUsers);
+      } catch (error) {
+        toast.error("Failed to load users");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadUsers();
+  }, []);
+
+  // 🔄 Ban / Unban এবং Approve লজিক
+  const handleStatusChange = (id: string, newStatus: "Active" | "Banned") => {
+    startTransition(async () => {
+      const res = await updateUserStatusAction(id, newStatus.toUpperCase());
+      if (res.success) {
+        toast.success(res.message);
+        setUsers((prevUsers) =>
+          prevUsers.map((user) => (user.id === id ? { ...user, status: newStatus } : user))
+        );
+      } else {
+        toast.error(res.message);
+      }
+    });
+  };
+
+  // 📊 স্ট্যাট কার্ডের গণনা
   const totalUsers = users.length;
   const totalStudents = users.filter((u) => u.role === "Student").length;
   const pendingUsers = users.filter((u) => u.status === "Pending").length;
   const bannedUsers = users.filter((u) => u.status === "Banned").length;
 
-  // 🔄 Ban / Unban এবং Approve লজিক
-  const handleStatusChange = (id: string, newStatus: "Active" | "Banned") => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === id ? { ...user, status: newStatus } : user))
-    );
-  };
-
   // 🔍 সার্চ এবং ফিল্টারিং লজিক
   const filteredUsers = users.filter((u) => {
     const matchesSearch = 
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.role.toLowerCase().includes(searchQuery.toLowerCase());
+      (u.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (u.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (u.role?.toLowerCase() || "").includes(searchQuery.toLowerCase());
 
     const matchesStatus = statusFilter === "All" || u.status === statusFilter;
 
@@ -118,7 +137,7 @@ export default function AllUsersPage() {
           All Users Directory
         </h1>
         <p className="text-slate-500 dark:text-emerald-100/70">
-          ওয়েবসাইটের সমস্ত ইউজারদের তালিকা দেখুন এবং প্রয়োজন অনুযায়ী Approve, Ban বা Unban করুন।
+          ওয়েবসাইটের সমস্ত ইউজারদের তালিকা দেখুন এবং প্রয়োজন অনুযায়ী Approve, Ban বা Unban করুন।
         </p>
       </div>
 
@@ -237,10 +256,19 @@ export default function AllUsersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.length === 0 ? (
+                  {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={5} className="h-32 text-center text-slate-500 dark:text-slate-400">
-                        খুঁজে পাওয়া যায় নি। অন্য কিছু দিয়ে সার্চ করুন।
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-5 w-5 animate-spin text-emerald-500" />
+                          ইউজারদের ডেটা লোড হচ্ছে...
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center text-slate-500 dark:text-slate-400">
+                        খুঁজে পাওয়া যায় নি। অন্য কিছু দিয়ে সার্চ করুন।
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -296,12 +324,11 @@ export default function AllUsersPage() {
                         {/* ⚡ Actions (Approve / Ban / Unban) */}
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            
-                            {/* Pending থাকলে Approve বাটন দেখাবে */}
                             {user.status === "Pending" && (
                               <Button 
                                 size="sm" 
                                 variant="outline"
+                                disabled={isPending}
                                 onClick={() => handleStatusChange(user.id, "Active")}
                                 className="gap-1.5 text-xs text-emerald-600 border-emerald-200 hover:bg-emerald-50 dark:text-emerald-400 dark:border-emerald-800/60 dark:hover:bg-emerald-950/40"
                               >
@@ -310,11 +337,11 @@ export default function AllUsersPage() {
                               </Button>
                             )}
 
-                            {/* Banned থাকলে Unban বাটন দেখাবে */}
                             {user.status === "Banned" ? (
                               <Button
                                 size="sm"
                                 variant="outline"
+                                disabled={isPending}
                                 onClick={() => handleStatusChange(user.id, "Active")}
                                 className="gap-1.5 text-xs text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800/60 dark:hover:bg-blue-950/40"
                               >
@@ -322,10 +349,10 @@ export default function AllUsersPage() {
                                 Unban
                               </Button>
                             ) : (
-                              // Active বা Pending থাকলে Ban বাটন দেখাবে
                               <Button
                                 size="sm"
                                 variant="outline"
+                                disabled={isPending}
                                 onClick={() => handleStatusChange(user.id, "Banned")}
                                 className="gap-1.5 text-xs text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800/60 dark:hover:bg-red-950/40"
                               >

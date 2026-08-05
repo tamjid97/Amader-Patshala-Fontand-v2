@@ -61,11 +61,10 @@ type NavbarProps = {
 }
 
 const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Batch Time", href: "/batchTime" },
-  { label: "Material", href: "/material" },
-  { label: "Result", href: "/result" },
-  { label: "Online Exam", href: "/coming-soon" },
+  { label: "Home", href: "/", protected: false },
+  { label: "Batch Time", href: "/batchTime", protected: true },
+  { label: "Material", href: "/material", protected: true },
+  { label: "Result", href: "/result", protected: true },
 ]
 
 function ModeToggle() {
@@ -162,7 +161,6 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
     { label: "View Profile", icon: User, href: "/profile" },
   ];
 
-  // 🌟 STUDENT ছাড়া বাকি সব রোল (ADMIN, MODERATOR, USER) এর জন্য ড্যাশবোর্ড থাকবে
   if (role === "ADMIN") {
     menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/admin_dashbord" });
   } else if (role === "MODERATOR") {
@@ -238,6 +236,16 @@ export function Navbar({ user }: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
 
+  const isLoggedIn = user?.success;
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, link: typeof navLinks[0]) => {
+    if (link.protected && !isLoggedIn) {
+      e.preventDefault();
+      toast.error("Please login first to view this page!");
+      router.push("/login");
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -276,7 +284,12 @@ export function Navbar({ user }: NavbarProps) {
                     <Link
                       key={link.label}
                       href={link.href}
-                      onClick={() => setOpen(false)}
+                      onClick={(e) => {
+                        handleNavClick(e, link);
+                        if (!link.protected || isLoggedIn) {
+                          setOpen(false);
+                        }
+                      }}
                       className={cn(
                         "rounded-md px-3 py-2 text-sm font-bold transition-all",
                         isActive 
@@ -306,6 +319,7 @@ export function Navbar({ user }: NavbarProps) {
               <Link
                 key={link.label}
                 href={link.href}
+                onClick={(e) => handleNavClick(e, link)}
                 className={cn(
                   "relative rounded-full px-5 py-1.5 text-sm font-bold transition-all duration-300",
                   isActive 

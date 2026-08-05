@@ -13,12 +13,14 @@ import {
   Loader2,
   AlertCircle
 } from "lucide-react";
+import { toast } from "sonner";
 
 // Shadcn UI Components
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { getStudentRequestsAction, updateStudentRequestStatusAction } from "../_actions/student";
 
 interface IStudentRequest {
   id: string;
@@ -29,79 +31,30 @@ interface IStudentRequest {
   image: string;
 }
 
-interface IBackendUserItem {
-  id: string;
-  name?: string | null;
-  email?: string | null;
-  phoneNumber?: string | null;
-  isApproved?: string;
-  createdAt?: string;
-  profilePicture?: string | null;
-  image?: string | null;
-  [key: string]: unknown;
-}
-
 export default function StudentRequestsClient() {
   const [requests, setRequests] = useState<IStudentRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // 🌟 ফিল্টার স্টেট ("ALL" | "PENDING" | "APPROVED" | "REJECTED")
+  const [statusFilter, setStatusFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "REJECTED">("ALL");
 
-  // 🌟 ক্লায়েন্ট সাইড থেকে টোকেন নিয়ে ডেটা ফেচ করা
   const fetchRequests = async () => {
     try {
-      setLoading(true);
       setErrorMessage(null);
 
-      const token = 
-        localStorage.getItem("accessToken") || 
-        localStorage.getItem("token") || 
-        localStorage.getItem("authToken") ||
-        document.cookie.split("; ").find(row => row.startsWith("accessToken="))?.split("=")[1] ||
-        document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1];
+      const result = await getStudentRequestsAction();
 
-      const res = await fetch("https://amader-patshal-backend.vercel.app/api/moderator/pending-requests", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        throw new Error(`Server error: ${res.status}`);
-      }
-
-      const result = await res.json();
-
-      if (result?.success && result?.data) {
-        const rawData = Array.isArray(result.data) 
-          ? (result.data as IBackendUserItem[]) 
-          : [result.data as IBackendUserItem];
-
-        const formattedData = rawData.map((item: IBackendUserItem) => {
-          const approvalStatus = (item.isApproved || "PENDING").trim().toUpperCase();
-          let formattedStatus: "PENDING" | "APPROVED" | "REJECTED" = "PENDING";
-          if (approvalStatus === "APPROVED") formattedStatus = "APPROVED";
-          else if (approvalStatus === "REJECTED") formattedStatus = "REJECTED";
-
-          return {
-            id: item.id,
-            name: item.name || "Unknown User",
-            email: item.email || item.phoneNumber || "N/A",
-            status: formattedStatus,
-            requestDate: item.createdAt ? item.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
-            image: item.profilePicture || item.image || "",
-          };
-        });
-        setRequests(formattedData);
+      if (result?.success && Array.isArray(result.data)) {
+        setRequests(result.data as IStudentRequest[]);
       } else {
         setRequests([]);
+        setErrorMessage(result?.message || "ডেটা পাওয়া যায়নি।");
       }
     } catch (error: unknown) {
       console.error("Error fetching student requests:", error);
-      setErrorMessage("সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না। ব্যাকএন্ড সার্ভার বন্ধ থাকতে পারে অথবা নেটওয়ার্ক সমস্যা হয়েছে।");
+      setErrorMessage("সার্ভারের সাথে সংযোগ স্থাপন করা যাচ্ছে না।");
       setRequests([]);
     } finally {
       setLoading(false);
@@ -115,71 +68,55 @@ export default function StudentRequestsClient() {
   // ✅ Approve Handler
   const handleApprove = async (id: string) => {
     try {
-      const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || localStorage.getItem("authToken");
-      const res = await fetch(`https://amader-patshal-backend.vercel.app/api/moderator/approve/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ status: "APPROVED" }),
-      });
-      const result = await res.json();
+      const result = await updateStudentRequestStatusAction(id, "APPROVED");
       if (result.success) {
-        setRequests((prev) =>
-          prev.map((req) => (req.id === id ? { ...req, status: "APPROVED" } : req))
-        );
+        toast.success(result.message || "সফলভাবে Approve করা হয়েছে!");
+        await fetchRequests(); // রিয়েল-টাইম আপডেট ও কাউন্টের জন্য
       } else {
-        alert(result.message || "Failed to approve");
+        toast.error(result.message || "Failed to approve");
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     }
   };
 
   // ❌ Reject Handler
   const handleReject = async (id: string) => {
     try {
-      const token = localStorage.getItem("accessToken") || localStorage.getItem("token") || localStorage.getItem("authToken");
-      const res = await fetch(`https://amader-patshal-backend.vercel.app/api/moderator/approve/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ status: "REJECTED" }),
-      });
-      const result = await res.json();
+      const result = await updateStudentRequestStatusAction(id, "REJECTED");
       if (result.success) {
-        setRequests((prev) =>
-          prev.map((req) => (req.id === id ? { ...req, status: "REJECTED" } : req))
-        );
+        toast.success(result.message || "সফলভাবে Reject করা হয়েছে!");
+        await fetchRequests(); // রিয়েল-টাইম আপডেট ও কাউন্টের জন্য
       } else {
-        alert(result.message || "Failed to reject");
+        toast.error(result.message || "Failed to reject");
       }
     } catch (error) {
       console.error(error);
-      alert("Something went wrong");
+      toast.error("Something went wrong");
     }
   };
 
-  // 📊 নিরাপদ গণনা
+  // 📊 স্ট্যাটাস অনুযায়ী কাউন্ট হিসাব
   const totalRequests = requests?.length || 0;
   const pendingCount = requests?.filter((r) => r.status === "PENDING").length || 0;
   const approvedCount = requests?.filter((r) => r.status === "APPROVED").length || 0;
+  const rejectedCount = requests?.filter((r) => r.status === "REJECTED").length || 0;
 
-  // 🔍 সার্চ লজিক
+  // 🔍 সার্চ এবং ফিল্টার লজিক একসাথে
   const filteredRequests = (requests || []).filter((r) => {
     const nameMatch = r.name ? r.name.toLowerCase().includes(searchQuery.toLowerCase()) : false;
     const emailMatch = r.email ? r.email.toLowerCase().includes(searchQuery.toLowerCase()) : false;
-    return nameMatch || emailMatch;
+    const matchesSearch = nameMatch || emailMatch;
+
+    if (statusFilter === "ALL") return matchesSearch;
+    return matchesSearch && r.status === statusFilter;
   });
 
   return (
     <div className="space-y-8 pb-10 animate-in fade-in duration-500">
       
-      {/* 🌟 Header Section */}
+      {/* Header Section */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-emerald-50">
           Student Approval Requests
@@ -189,10 +126,8 @@ export default function StudentRequestsClient() {
         </p>
       </div>
 
-      {/* 🔢 Stat Overview Cards */}
+      {/* Stat Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        
-        {/* Pending Requests */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <Card className="border-amber-100 dark:border-amber-900/40 dark:bg-[#030a08]/80 shadow-sm">
             <CardContent className="p-6 flex items-center justify-between">
@@ -207,7 +142,6 @@ export default function StudentRequestsClient() {
           </Card>
         </motion.div>
 
-        {/* Approved Students */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           <Card className="border-emerald-100 dark:border-emerald-900/40 dark:bg-[#030a08]/80 shadow-sm">
             <CardContent className="p-6 flex items-center justify-between">
@@ -222,7 +156,6 @@ export default function StudentRequestsClient() {
           </Card>
         </motion.div>
 
-        {/* Total Applications */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <Card className="border-slate-100 dark:border-emerald-900/40 dark:bg-[#030a08]/80 shadow-sm">
             <CardContent className="p-6 flex items-center justify-between">
@@ -238,6 +171,57 @@ export default function StudentRequestsClient() {
         </motion.div>
       </div>
 
+      {/* 🌟 Filtering Tabs System */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          variant={statusFilter === "ALL" ? "default" : "outline"}
+          onClick={() => setStatusFilter("ALL")}
+          className={`rounded-xl px-5 py-2 font-semibold transition-all ${
+            statusFilter === "ALL" 
+              ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md border-transparent" 
+              : "bg-slate-100 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-emerald-900/40 hover:bg-slate-200 dark:hover:bg-emerald-950/40"
+          }`}
+        >
+          All ({totalRequests})
+        </Button>
+
+        <Button
+          variant={statusFilter === "PENDING" ? "default" : "outline"}
+          onClick={() => setStatusFilter("PENDING")}
+          className={`rounded-xl px-5 py-2 font-semibold transition-all ${
+            statusFilter === "PENDING" 
+              ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md border-transparent" 
+              : "bg-slate-100 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-emerald-900/40 hover:bg-slate-200 dark:hover:bg-emerald-950/40"
+          }`}
+        >
+          Pending ({pendingCount})
+        </Button>
+
+        <Button
+          variant={statusFilter === "APPROVED" ? "default" : "outline"}
+          onClick={() => setStatusFilter("APPROVED")}
+          className={`rounded-xl px-5 py-2 font-semibold transition-all ${
+            statusFilter === "APPROVED" 
+              ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md border-transparent" 
+              : "bg-slate-100 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-emerald-900/40 hover:bg-slate-200 dark:hover:bg-emerald-950/40"
+          }`}
+        >
+          Approved ({approvedCount})
+        </Button>
+
+        <Button
+          variant={statusFilter === "REJECTED" ? "default" : "outline"}
+          onClick={() => setStatusFilter("REJECTED")}
+          className={`rounded-xl px-5 py-2 font-semibold transition-all ${
+            statusFilter === "REJECTED" 
+              ? "bg-amber-500 hover:bg-amber-600 text-white shadow-md border-transparent" 
+              : "bg-slate-100 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-emerald-900/40 hover:bg-slate-200 dark:hover:bg-emerald-950/40"
+          }`}
+        >
+          Rejected ({rejectedCount})
+        </Button>
+      </div>
+
       {/* 📋 Data Table & Search Area */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -245,7 +229,6 @@ export default function StudentRequestsClient() {
         transition={{ delay: 0.4 }}
       >
         <Card className="border-emerald-100 dark:border-emerald-900/50 dark:bg-[#030a08]/80 shadow-sm overflow-hidden">
-          
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
             <div>
               <CardTitle className="text-slate-800 dark:text-emerald-100">Review Applications</CardTitle>
@@ -255,7 +238,6 @@ export default function StudentRequestsClient() {
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              {/* Search Box */}
               <div className="relative w-full sm:w-64">
                 <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                 <Input
@@ -297,7 +279,7 @@ export default function StudentRequestsClient() {
                           <AlertCircle className="h-6 w-6" />
                           <span>{errorMessage}</span>
                           <Button size="sm" variant="outline" onClick={fetchRequests} className="mt-2">
-                            পুনরায় চেষ্টা করুন (Retry)
+                            পুনরায় চেষ্টা করুন (Retry)
                           </Button>
                         </div>
                       </TableCell>
@@ -311,8 +293,6 @@ export default function StudentRequestsClient() {
                   ) : (
                     filteredRequests.map((req) => (
                       <TableRow key={req.id} className="border-slate-100 dark:border-emerald-900/30 dark:hover:bg-emerald-950/20">
-                        
-                        {/* 🖼️ Avatar */}
                         <TableCell className="p-2 text-center">
                           <div className="mx-auto h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100 dark:border-emerald-800 dark:bg-slate-800 flex items-center justify-center">
                             {req.image ? (
@@ -323,18 +303,15 @@ export default function StudentRequestsClient() {
                           </div>
                         </TableCell>
 
-                        {/* 👤 Name & Email/Phone */}
                         <TableCell className="font-medium text-slate-700 dark:text-emerald-50">
                           <div>{req.name}</div>
                           <span className="text-xs text-slate-400 block font-normal">{req.email}</span>
                         </TableCell>
 
-                        {/* 📅 Date */}
                         <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                           {req.requestDate}
                         </TableCell>
 
-                        {/* 🟢 Status Badge */}
                         <TableCell>
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             req.status === "APPROVED"
@@ -350,7 +327,6 @@ export default function StudentRequestsClient() {
                           </span>
                         </TableCell>
                         
-                        {/* ⚡ Actions */}
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             {req.status === "PENDING" ? (
@@ -381,7 +357,6 @@ export default function StudentRequestsClient() {
                             )}
                           </div>
                         </TableCell>
-
                       </TableRow>
                     ))
                   )}

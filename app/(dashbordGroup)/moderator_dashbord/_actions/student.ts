@@ -48,13 +48,13 @@ export async function getStudentRequestsAction(): Promise<ResponseState> {
         });
 
         const textResponse = await res.text();
-        let result: { success?: boolean; data?: unknown; [key: string]: unknown };
+        let result: { success?: boolean; data?: unknown; message?: string };
         try {
             result = JSON.parse(textResponse);
         } catch (e) {
             return {
                 success: res.ok,
-                message: textResponse || "Student requests fetched successfully.",
+                message: "Failed to parse data from server.",
                 data: [],
             };
         }
@@ -68,13 +68,8 @@ export async function getStudentRequestsAction(): Promise<ResponseState> {
                 const approvalStatus = (item.isApproved || "PENDING").trim().toUpperCase();
                 
                 let formattedStatus: "PENDING" | "APPROVED" | "REJECTED" = "PENDING";
-                if (approvalStatus === "APPROVED") {
-                    formattedStatus = "APPROVED";
-                } else if (approvalStatus === "REJECTED") {
-                    formattedStatus = "REJECTED";
-                } else {
-                    formattedStatus = "PENDING";
-                }
+                if (approvalStatus === "APPROVED") formattedStatus = "APPROVED";
+                else if (approvalStatus === "REJECTED") formattedStatus = "REJECTED";
 
                 return {
                     id: item.id,
@@ -91,7 +86,6 @@ export async function getStudentRequestsAction(): Promise<ResponseState> {
 
         return result as ResponseState;
     } catch (error) {
-        console.error("Get student requests error:", error);
         return {
             success: false,
             message: "Something went wrong while fetching student requests.",
@@ -112,16 +106,14 @@ export async function updateStudentRequestStatusAction(
             cookieStore.get("authToken")?.value;
 
         if (!accessToken) {
-            return {
-                success: false,
-                message: "Unauthorized! Please login first.",
-            };
+            return { success: false, message: "Unauthorized! Please login first." };
         }
 
         const res = await fetch(`https://amader-patshal-backend.vercel.app/api/moderator/approve/${requestId}`, {
             method: "PATCH", 
             headers: {
                 "Content-Type": "application/json",
+                "Accept": "application/json",
                 Authorization: `Bearer ${accessToken}`,
             },
             body: JSON.stringify({ status }),
@@ -129,26 +121,27 @@ export async function updateStudentRequestStatusAction(
 
         const textResponse = await res.text();
         let result;
+
         try {
             result = JSON.parse(textResponse);
         } catch (e) {
+            // 🌟 যদি ব্যাকএন্ড 500 HTML পেজ দেয়, তবে এখানে তা ধরা পড়বে
+            console.error("Backend returned HTML instead of JSON:", textResponse.substring(0, 100));
             return {
-                success: res.ok,
-                message: textResponse || `Request successfully ${status.toLowerCase()}.`,
-                data: textResponse,
+                success: false,
+                message: `Server Error (500): ব্যাকএন্ড লাইভ সার্ভারে সমস্যা হচ্ছে। দয়া করে Vercel-এর লগ চেক করুন।`,
             };
         }
 
-        if (result?.success) {
+        if (result?.success || res.ok) {
             revalidatePath("/moderator_dashbord/syudent");
+            return { success: true, message: result.message || `Successfully ${status}` };
+        } else {
+            return { success: false, message: result.message || "Failed to update." };
         }
 
-        return result;
     } catch (error) {
-        console.error("Update student status error:", error);
-        return {
-            success: false,
-            message: "Something went wrong while updating request status.",
-        };
+        console.error("Update error:", error);
+        return { success: false, message: "Something went wrong in Server Action." };
     }
 }

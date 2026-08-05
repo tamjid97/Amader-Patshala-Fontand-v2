@@ -19,20 +19,16 @@ export const ADMIN_SIDEBAR_ITEMS: ISidebarItem[] = [
     href: "/admin_dashbord",
     icon: LayoutDashboard,
   },
-  {
-    label: "All Users",
-    href: "/admin_dashbord/allUser",
-    icon: Users,
-  },
+
   {
     label: "Manage Moderators",
     href: "/admin_dashbord/modarator",
     icon: ShieldPlus,
   },
   {
-    label: "Banned Users",
+    label: "Manage Users",
     href: "/admin_dashbord/bannedUser",
-    icon: UserX,
+    icon: Users,
   },
 ];
 
