@@ -153,8 +153,6 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
   }
 
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
-  const router = useRouter(); 
-
   const role = user?.data?.role?.toUpperCase();
 
   const menuItems = [
@@ -207,8 +205,8 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
           {menuItems.map((item) => (
             <DropdownMenuItem 
               key={item.label} 
-              onClick={() => router.push(item.href)} 
-              className="hover:bg-emerald-200/60 dark:hover:bg-emerald-900/50 cursor-pointer text-emerald-950 dark:text-emerald-100 transition-colors font-medium"
+              render={<Link href={item.href} />}
+              className="hover:bg-emerald-200/60 dark:hover:bg-emerald-900/50 cursor-pointer text-emerald-950 dark:text-emerald-100 transition-colors font-medium flex items-center w-full"
             >
               <item.icon className="mr-2 h-4 w-4 text-emerald-700 dark:text-emerald-400" />
               {item.label}
