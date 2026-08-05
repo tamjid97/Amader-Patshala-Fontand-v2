@@ -159,13 +159,15 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
     { label: "View Profile", icon: User, href: "/profile" },
   ];
 
+  // Role অনুযায়ী ড্যাশবোর্ড মেনু অ্যাড করা হচ্ছে
   if (role === "ADMIN") {
     menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/admin_dashbord" });
   } else if (role === "MODERATOR") {
     menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/moderator_dashbord" });
   } else if (role === "USER") {
-    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "user_dashboard" });
+    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/user_dashboard" }); // যুক্ত করা হয়েছে '/'
   }
+  // যদি role === "STUDENT" হয়, তাহলে উপরের কোনো কন্ডিশন মিলবে না এবং ড্যাশবোর্ড দেখা যাবে না।
 
   menuItems.push({ label: "Notifications", icon: Bell, href: "/coming-soon" });
 
