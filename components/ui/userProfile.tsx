@@ -106,11 +106,11 @@ export default function UserProfile({ initialData, onUpdateAction }: UserProfile
   const handleSave = async () => {
     try {
       setIsLoading(true)
+      // ক্লাস ফিল্ডটি এখানে পাঠানো হয়নি যাতে ব্যাকএন্ডে কোনো এরর বা ক্র্যাশ না করে
       const payload: Partial<BackendUserPayload> = {
         name: editData.name,
         phoneNumber: editData.phoneNumber,
         email: editData.email,
-        class: userData.class, // ক্লাস ফিক্সড রাখা হলো, পরিবর্তন হবে না
         institute: editData.institute,
         profilePicture: profileImageUrlInput.trim() !== '' ? profileImageUrlInput.trim() : userData.profilePicture,
       }

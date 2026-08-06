@@ -87,7 +87,8 @@ export const updateProfile = async (updatedData: {
     const result = await res.json();
 
     if (result?.success) {
-      revalidatePath("/profile");
+      // পুরো লেআউট এবং ন্যাভবারের ক্যাশ রিফ্রেশ করার জন্য এটি দেওয়া হলো
+      revalidatePath("/", "layout");
     }
 
     return result;

@@ -147,27 +147,30 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
   const BACKEND_URL = process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:5000";
   let profilePic = user?.data?.profilePicture;
 
-  if (profilePic && !profilePic.startsWith("http://") && !profilePic.startsWith("https://")) {
+  if (profilePic && !profilePic.startsWith("http://") && !profilePic.startsWith("https://") && !profilePic.startsWith("data:image/")) {
     const cleanPath = profilePic.replace(/\\/g, "/");
     profilePic = `${BACKEND_URL}/${cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath}`;
   }
 
+  // Date.now() বাদ দিয়ে শুধু updatedAt ব্যবহার করা হলো যা React-এর purity রুল মেনে চলে
+  const updateToken = user?.data?.updatedAt ? encodeURIComponent(user.data.updatedAt) : "1";
+  const finalProfilePic = profilePic ? `${profilePic}?t=${updateToken}` : null;
+
   const initial = user?.data?.name ? user.data.name.charAt(0).toUpperCase() : "U";
   const role = user?.data?.role?.toUpperCase();
+  const isActiveStatus = user?.data?.status === "ACTIVE";
 
   const menuItems = [
     { label: "View Profile", icon: User, href: "/profile" },
   ];
 
-  // Role অনুযায়ী ড্যাশবোর্ড মেনু অ্যাড করা হচ্ছে
   if (role === "ADMIN") {
     menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/admin_dashbord" });
   } else if (role === "MODERATOR") {
     menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/moderator_dashbord" });
   } else if (role === "USER") {
-    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/user_dashboard" }); // যুক্ত করা হয়েছে '/'
+    menuItems.push({ label: "Dashboard", icon: LayoutDashboard, href: "/user_dashboard" });
   }
-  // যদি role === "STUDENT" হয়, তাহলে উপরের কোনো কন্ডিশন মিলবে না এবং ড্যাশবোর্ড দেখা যাবে না।
 
   menuItems.push({ label: "Notifications", icon: Bell, href: "/coming-soon" });
 
@@ -178,21 +181,30 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
         aria-label="Open profile menu"
       >
         <Avatar className="size-9">
-          <AvatarImage src={profilePic || undefined} alt={user?.data?.name || "User"} />
+          <AvatarImage src={finalProfilePic || undefined} alt={user?.data?.name || "User"} className="object-cover" />
           <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
             {initial}
           </AvatarFallback>
         </Avatar>
+
+        {isActiveStatus && (
+          <span className="absolute bottom-0 right-0 size-3 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#030a08] animate-pulse" />
+        )}
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" sideOffset={8} className="w-64 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-[#030a08] shadow-xl">
         <div className="flex items-center gap-3 p-2">
-          <Avatar className="size-10 shadow-sm">
-            <AvatarImage src={profilePic || undefined} alt={user?.data?.name || "User"} />
-            <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="size-10 shadow-sm">
+              <AvatarImage src={finalProfilePic || undefined} alt={user?.data?.name || "User"} className="object-cover" />
+              <AvatarFallback className="bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-100 font-bold">
+                {initial}
+              </AvatarFallback>
+            </Avatar>
+            {isActiveStatus && (
+              <span className="absolute bottom-0 right-0 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#030a08]" />
+            )}
+          </div>
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm font-bold text-emerald-950 dark:text-emerald-100">
               {user?.data?.name}
