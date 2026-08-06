@@ -58,7 +58,7 @@ const extractUserInfo = (data: ApiResponse | BackendUserPayload | null | undefin
   return data as BackendUserPayload
 }
 
-function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
+export default function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
   const [isEditMode, setIsEditMode] = useState(false)
   const [profileImageUrlInput, setProfileImageUrlInput] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
@@ -110,7 +110,7 @@ function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
         name: editData.name,
         phoneNumber: editData.phoneNumber,
         email: editData.email,
-        class: editData.class,
+        class: userData.class, // ক্লাস ফিক্সড রাখা হলো, পরিবর্তন হবে না
         institute: editData.institute,
         profilePicture: profileImageUrlInput.trim() !== '' ? profileImageUrlInput.trim() : userData.profilePicture,
       }
@@ -295,20 +295,11 @@ function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
                   <div className="space-y-1.5">
                     <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-emerald-300">
                       <BookOpen size={15} className="text-emerald-600 dark:text-emerald-400" />
-                      Class / Batch
+                      Class / Batch (Fixed)
                     </label>
-                    {isEditMode ? (
-                      <Input
-                        value={editData.class || ''}
-                        onChange={e => handleInputChange('class', e.target.value)}
-                        placeholder="Class"
-                        className="bg-slate-50 dark:bg-[#020a07] border-slate-200 dark:border-emerald-900/40 rounded-xl h-11 font-medium"
-                      />
-                    ) : (
-                      <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
-                        Class {userData.class || 'N/A'}
-                      </div>
-                    )}
+                    <div className="rounded-xl bg-slate-50/80 dark:bg-[#020a07]/60 px-4 py-3 text-slate-800 dark:text-emerald-100 font-semibold border border-slate-100 dark:border-emerald-900/30 text-sm">
+                      {userData.class || 'N/A'}
+                    </div>
                   </div>
 
                   <div className="space-y-1.5 sm:col-span-2">
@@ -458,5 +449,3 @@ function UserProfile({ initialData, onUpdateAction }: UserProfileProps) {
     </div>
   )
 }
-
-export default UserProfile

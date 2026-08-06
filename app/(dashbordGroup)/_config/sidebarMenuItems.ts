@@ -57,12 +57,12 @@ export const MODERATOR_SIDEBAR_ITEMS: ISidebarItem[] = [
     icon: LayoutDashboard,
   },
   {
-    label: "PDF Access",
+    label: "PDF Management",
     href: "/moderator_dashbord/pdfs", // 👈 পাথ ফিক্স করা হয়েছে
     icon: FileText,
   },
     {
-    label: "PDF Management",
+    label: "PDF ACCESS",
     href: "/moderator_dashbord/pdf-access", // 👈 পাথ ফিক্স করা হয়েছে
     icon: FileText,
   },
