@@ -1,15 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, FileText, Sparkles, Dna, GraduationCap, Users, Calendar, Lock, X } from "lucide-react";
+import { Search, FileText, Sparkles, Dna, GraduationCap, Users, Calendar, Lock, X, Clock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPdfs } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/pdf";
 import { getMe } from "../_acttion/profile";
-
-// ==============================================================================
-// 🚨 [১. ইমপোর্ট স্থান] ব্যাকএন্ড থেকে ইউজার তথ্য আনার অ্যাকশন ইমপোর্ট
-// ==============================================================================
-
 
 const BACKGROUND_ELEMENTS = [
   { top: 12, left: 10, xOffset: -15, duration: 9 },
@@ -131,49 +126,49 @@ interface IPdf {
 
 export default function PdfPage() {
   const [pdfs, setPdfs] = useState<IPdf[]>([]);
-  
-  // ==============================================================================
-  // 🚨 [২. স্টেট ডিক্লেয়ারেশন] পাওয়া ইউজারের রোল জমা রাখার স্টেট
-  // ==============================================================================
   const [userRole, setUserRole] = useState<string | null>(null);
-
+  const [userBatch, setUserBatch] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<"HSC" | "SSC">("HSC");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
 
   useEffect(() => {
     async function fetchData() {
       try {
-
-        // ==============================================================================
-        // 🚨 [৩. ডাটা কল করার মূল লাইন]
-        // getMe() কলের মাধ্যমে সার্ভার থেকে লগইন থাকা ইউজারের ডাটা আনা হচ্ছে
-        // ==============================================================================
         const [pdfResponse, userResponse] = await Promise.all([
           getPdfs(),
-          getMe(), // 🔥🔥🔥 এই লাইনে ইউজারের তথ্য ব্যাকএন্ড থেকে ফেচ করা হচ্ছে
+          getMe(),
         ]);
 
-        console.log("DEBUG - getMe Raw Response:", userResponse);
+        console.log("========== [DEBUG] USER RESPONSE START ==========");
+        console.log("Full userResponse:", userResponse);
 
-        // ==============================================================================
-        // 🚨 [৪. ইউজার রোল এক্সট্রাক্ট করা]
-        // ব্যাকএন্ডের রেসপন্স অবজেক্ট থেকে ইউজারের Role (যেমন: STUDENT, ADMIN) বের করা
-        // ==============================================================================
         if (userResponse) {
-          const fetchedRole = 
-            userResponse?.data?.role || 
-            userResponse?.data?.user?.role || 
-            userResponse?.user?.role || 
-            userResponse?.role; // 🔥 ইউজারের রোল ডাটা অবজেক্ট থেকে খুঁজে বের করা হচ্ছে
+          const userData = userResponse?.data?.user || userResponse?.data || userResponse?.user || userResponse;
+          console.log("Extracted userData object:", userData);
 
-          console.log("DEBUG - Extracted Role:", fetchedRole);
-
+          const fetchedRole = userData?.role;
           if (fetchedRole) {
-            setUserRole(fetchedRole); // 🔥 ইউজারের রোল স্টেটে সেভ করা হচ্ছে
+            setUserRole(fetchedRole);
+          }
+
+          // এখানে সবার আগে userData?.class যুক্ত করা হয়েছে কারণ ডাটাবেজে ফিল্ডের নাম 'class'
+          const fetchedBatch = 
+            userData?.class || 
+            userData?.batch || 
+            userData?.className || 
+            userData?.studentBatch ||
+            userData?.hscBatch || 
+            userData?.sscBatch || "";
+
+          console.log("Extracted Batch/Class:", fetchedBatch);
+          if (fetchedBatch) {
+            setUserBatch(fetchedBatch);
           }
         }
+        console.log("========== [DEBUG] USER RESPONSE END ==========");
 
         const rawData = Array.isArray(pdfResponse) ? pdfResponse : pdfResponse?.data;
         if (pdfResponse?.success && Array.isArray(rawData)) {
@@ -217,13 +212,9 @@ export default function PdfPage() {
     return <GlobalLoading />;
   }
 
-  // ==============================================================================
-  // 🚨 [৫. পারমিশন ভ্যালিডেশন]
-  // ইউজার পিডিএফ দেখার যোগ্য কি না (STUDENT, ADMIN, MODERATOR, USER রোল আছে কি না) তা চেক
-  // ==============================================================================
-  const hasAccess = ["STUDENT", "ADMIN", "MODERATOR", "USER"].includes(
-    userRole?.toUpperCase()?.trim() || ""
-  );
+  // যেহেতু আপনার রোল 'USER', তাই পরীক্ষামূলকভাবে এটি 'USER' বা 'STUDENT' দুটিতেই কাজ করবে এমনভাবে চেক করা হলো। 
+  // পরবর্তীতে ব্যাকএন্ড থেকে রোল 'STUDENT' করে দিলে এটি অটো কাজ করবে।
+  const isStudent = userRole?.toUpperCase()?.trim() === "STUDENT" || userRole?.toUpperCase()?.trim() === "USER";
 
   return (
     <div className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden">
@@ -307,81 +298,118 @@ export default function PdfPage() {
 
         {filteredPdfs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
-            {filteredPdfs.map((pdf, index) => (
-              <div 
-                key={pdf.id || index}
-                className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 animate-in fade-in slide-in-from-bottom-8 border border-emerald-900/30 bg-slate-900"
-                style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
-              >
-                {pdf.image ? (
-                  <img 
-                    src={pdf.image} 
-                    alt={pdf.title} 
-                    className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85" 
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-slate-950 flex items-center justify-center">
-                    <FileText className="w-16 h-16 text-emerald-500/40" />
+            {filteredPdfs.map((pdf, index) => {
+              const pdfClassStr = (pdf.className || "").toLowerCase();
+              const userBatchStr = (userBatch || "").toLowerCase().trim();
+
+              let isBatchMatched = false;
+
+              if (userBatchStr !== "") {
+                const userBatchMatches = userBatchStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+                const pdfBatchMatches = pdfClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+
+                if (userBatchMatches.length > 0 && pdfBatchMatches.length > 0) {
+                  isBatchMatched = userBatchMatches.some((u) =>
+                    pdfBatchMatches.some((p) => p.includes(u) || u.includes(p))
+                  );
+                } else {
+                  isBatchMatched = pdfClassStr.includes(userBatchStr);
+                }
+              } else {
+                isBatchMatched = false;
+              }
+
+              console.log(`[PDF Match Check] Title: "${pdf.title}" | PDF Class: "${pdf.className}" | User Batch: "${userBatch}" | Match Result:`, isBatchMatched);
+
+              return (
+                <div 
+                  key={pdf.id || index}
+                  className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 animate-in fade-in slide-in-from-bottom-8 border border-emerald-900/30 bg-slate-900"
+                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
+                >
+                  {pdf.image ? (
+                    <img 
+                      src={pdf.image} 
+                      alt={pdf.title} 
+                      className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85" 
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-slate-950 flex items-center justify-center">
+                      <FileText className="w-16 h-16 text-emerald-500/40" />
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/30 group-hover:from-black transition-colors duration-300" />
+
+                  <div className="absolute top-4 inset-x-4 z-10 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
+                      <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-xs font-bold tracking-wide">
+                        {pdf.createdAt ? new Date(pdf.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : 'সাম্প্রতিক'}
+                      </span>
+                    </div>
+
+                    {pdf.className && (
+                      <span className="px-3 py-1 bg-emerald-600/90 backdrop-blur-md text-white font-extrabold text-[11px] rounded-full shadow-lg border border-emerald-400/30">
+                        {pdf.className}
+                      </span>
+                    )}
                   </div>
-                )}
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/30 group-hover:from-black transition-colors duration-300" />
+                  <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
+                    
+                    {pdf.subject && (
+                      <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
+                        {pdf.subject}
+                      </span>
+                    )}
 
-                <div className="absolute top-4 inset-x-4 z-10 flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
-                    <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-xs font-bold tracking-wide">
-                      {pdf.createdAt ? new Date(pdf.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : 'সাম্প্রতিক'}
-                    </span>
+                    <h3 className="text-xl font-black text-white tracking-tight drop-shadow-md line-clamp-2">
+                      {pdf.title}
+                    </h3>
+
+                    {pdf.pdfUrl && (
+                      <>
+                        {!isBatchMatched ? (
+                          <button
+                            onClick={() => {
+                              setModalMessage("এই লেকচার শিটটি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!");
+                              setIsModalOpen(true);
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
+                          >
+                            <Clock className="w-4 h-4 animate-spin" />
+                            Coming Soon
+                          </button>
+                        ) : isStudent ? (
+                          <a
+                            href={pdf.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
+                          >
+                            <FileText className="w-4 h-4" />
+                            PDF দেখুন
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setModalMessage("পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
+                              setIsModalOpen(true);
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                          >
+                            <Lock className="w-4 h-4" />
+                            শুধুমাত্র স্টুডেন্টদের জন্য
+                          </button>
+                        )}
+                      </>
+                    )}
+
                   </div>
-
-                  {pdf.className && (
-                    <span className="px-3 py-1 bg-emerald-600/90 backdrop-blur-md text-white font-extrabold text-[11px] rounded-full shadow-lg border border-emerald-400/30">
-                      {pdf.className}
-                    </span>
-                  )}
                 </div>
-
-                <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
-                  
-                  {pdf.subject && (
-                    <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
-                      {pdf.subject}
-                    </span>
-                  )}
-
-                  <h3 className="text-xl font-black text-white tracking-tight drop-shadow-md line-clamp-2">
-                    {pdf.title}
-                  </h3>
-
-                  {pdf.pdfUrl && (
-                    /* ==============================================================================
-                       🚨 [৬. ভিউ রেন্ডারিং] ইউজারের Access (hasAccess) অনুযায়ী বাটন দেখানো
-                       ============================================================================== */
-                    hasAccess ? (
-                      <a
-                        href={pdf.pdfUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
-                      >
-                        <FileText className="w-4 h-4" />
-                        PDF দেখুন
-                      </a>
-                    ) : (
-                      <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
-                      >
-                        <Lock className="w-4 h-4" />
-                        শুধুমাত্র স্টুডেন্টদের জন্য
-                      </button>
-                    )
-                  )}
-
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 animate-in fade-in duration-700">
@@ -424,16 +452,16 @@ export default function PdfPage() {
                 <X className="w-5 h-5" />
               </button>
 
-              <div className="w-20 h-20 bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner border border-red-200 dark:border-red-900/40">
-                <Lock className="w-10 h-10" />
+              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 rounded-3xl flex items-center justify-center mx-auto shadow-inner border border-emerald-200 dark:border-emerald-900/40">
+                <Clock className="w-10 h-10" />
               </div>
 
               <div className="space-y-2">
                 <h3 className="text-2xl font-black text-slate-900 dark:text-emerald-50 tracking-tight">
-                  অ্যাক্সেস সীমিত (Restricted)
+                  নোটিশ
                 </h3>
                 <p className="text-slate-600 dark:text-emerald-200/80 text-sm font-semibold leading-relaxed px-2">
-                  পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।
+                  {modalMessage}
                 </p>
               </div>
 

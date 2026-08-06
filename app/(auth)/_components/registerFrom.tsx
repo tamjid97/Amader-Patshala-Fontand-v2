@@ -2,15 +2,22 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { 
-  Eye, EyeOff, User, Phone, 
-  School, GraduationCap, Dna, Lock, Image as ImageIcon 
+  Eye, 
+  EyeOff, 
+  User, 
+  Phone, 
+  School, 
+  GraduationCap, 
+  Dna, 
+  Lock, 
+  Image as ImageIcon,
+  ChevronDown 
 } from "lucide-react";
 import { motion, Variants } from "framer-motion";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useFormStatus } from "react-dom";
 import { registerUser } from "../_action/registerAction";
 
 const containerVariants: Variants = {
@@ -46,7 +53,7 @@ export default function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [profilePicUrl, setProfilePicUrl] = useState("");
   const [clientError, setClientError] = useState("");
-  const [isPending, startTransition] = useTransition(); // transition হুক যুক্ত করা হলো
+  const [isPending, startTransition] = useTransition();
 
   const initialState = {
     success: false,
@@ -71,7 +78,7 @@ export default function RegisterForm() {
       return;
     }
 
-    // পাসওয়ার্ড ৬ ডিজিট বা তার বেশি কিনা চেক
+    // পাসওয়ার্ড ৬ ডিজিট বা তার বেশি কিনা চেক
     if (!password || password.length < 6) {
       setClientError("Password must be at least 6 characters long!");
       return;
@@ -216,21 +223,31 @@ export default function RegisterForm() {
                 </div>
               </motion.div>
 
-              {/* Class */}
+              {/* Class / Category Dropdown */}
               <motion.div variants={itemVariants} className="space-y-2">
                 <Label htmlFor="class" className="text-slate-700 dark:text-slate-300">
-                  Class / Year
+                  Class / Category
                 </Label>
                 <div className="relative group">
-                  <GraduationCap className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500" />
-                  <Input
+                  <GraduationCap className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500 z-10" />
+                  
+                  <select
                     id="class"
                     name="class"
-                    type="text"
-                    placeholder="12"
                     required
-                    className="pl-10 transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/50"
-                  />
+                    defaultValue=""
+                    className="flex h-10 w-full appearance-none rounded-md border border-slate-200 bg-transparent pl-10 pr-10 py-2 text-sm ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:ring-offset-slate-950 dark:text-white"
+                  >
+                    <option value="" disabled className="text-slate-500 dark:text-slate-400 dark:bg-slate-900">
+                      Select your class...
+                    </option>
+                    <option value="HSC-27" className="dark:bg-slate-900">HSC-27</option>
+                    <option value="HSC-28" className="dark:bg-slate-900">HSC-28</option>
+                    <option value="SSC-27" className="dark:bg-slate-900">SSC-27</option>
+                    <option value="SSC-28" className="dark:bg-slate-900">SSC-28</option>
+                  </select>
+
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-emerald-500" />
                 </div>
               </motion.div>
 

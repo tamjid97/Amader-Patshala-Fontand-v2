@@ -29,6 +29,16 @@ interface ActionResponse {
   success: boolean;
   message?: string;
   data?: unknown;
+  statusCode?: number;
+}
+
+interface PdfPayload {
+  title?: string;
+  subject?: string;
+  className?: string;
+  pdfUrl?: string;
+  link?: string;
+  image?: string | null;
 }
 
 // 1. Create PDF Action
@@ -68,7 +78,7 @@ export async function createPdf(formData: FormData): Promise<ActionResponse> {
 
     const result = (await handleApiResponse(response)) as ActionResponse;
     if (result.success) {
-      revalidateTag("pdfs", "max"); // দুটি আর্গুমেন্ট পাস করা হলো
+      revalidateTag("pdfs", "max");
     }
     return result;
   } catch (error: unknown) {
@@ -110,16 +120,31 @@ export const getPdfs = async () => {
 };
 
 // 3. Update PDF Action
-export const updatePdf = async (id: string, formData: FormData): Promise<ActionResponse> => {
+export const updatePdf = async (
+  id: string, 
+  inputData: FormData | PdfPayload
+): Promise<ActionResponse> => {
   console.log(`[Action] updatePdf called for ID: ${id} 📝`);
-  
-  const payload = {
-    title: String(formData.get("title") || "").trim(),
-    subject: String(formData.get("subject") || "").trim(),
-    className: String(formData.get("className") || "").trim(),
-    pdfUrl: String(formData.get("link") || "").trim(), 
-    image: String(formData.get("image") || "").trim() || null,
-  };
+
+  let payload;
+
+  if (inputData instanceof FormData) {
+    payload = {
+      title: String(inputData.get("title") || "").trim(),
+      subject: String(inputData.get("subject") || "").trim(),
+      className: String(inputData.get("className") || "").trim(),
+      pdfUrl: String(inputData.get("pdfUrl") || inputData.get("link") || "").trim(), 
+      image: String(inputData.get("image") || "").trim() || null,
+    };
+  } else {
+    payload = {
+      title: String(inputData.title || "").trim(),
+      subject: String(inputData.subject || "").trim(),
+      className: String(inputData.className || "").trim(),
+      pdfUrl: String(inputData.pdfUrl || inputData.link || "").trim(),
+      image: String(inputData.image || "").trim() || null,
+    };
+  }
 
   const accessToken = await isAccessTokenExist();
 
@@ -141,10 +166,10 @@ export const updatePdf = async (id: string, formData: FormData): Promise<ActionR
       body: JSON.stringify(payload)
     });
 
-    const result = await handleApiResponse(res) as ActionResponse;
+    const result = (await handleApiResponse(res)) as ActionResponse;
     
     if (result.success) {
-      revalidateTag("pdfs", "max"); // দুটি আর্গুমেন্ট পাস করা হলো
+      revalidateTag("pdfs", "max");
     }
     return result;
   } catch (error) {
@@ -174,10 +199,10 @@ export const deletePdf = async (id: string): Promise<ActionResponse> => {
       }
     });
 
-    const result = await handleApiResponse(res) as ActionResponse;
+    const result = (await handleApiResponse(res)) as ActionResponse;
 
     if (result.success) {
-      revalidateTag("pdfs", "max"); // দুটি আর্গুমেন্ট পাস করা হলো
+      revalidateTag("pdfs", "max");
     }
     return result;
   } catch (error) {

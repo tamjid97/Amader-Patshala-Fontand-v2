@@ -14,6 +14,8 @@ export const registerUser = async (
   prevState: RegisterResponse,
   formData: FormData,
 ) => {
+  console.log("🚀 [Register Action] Starting registration process...");
+
   // FormData থেকে ফিল্ডগুলো সংগ্রহ করা
   const name = formData.get("name")?.toString().trim();
   const phoneNumber = formData.get("phoneNumber")?.toString().trim();
@@ -35,10 +37,19 @@ export const registerUser = async (
     payload.profilePicture = profilePicture;
   }
 
+  // সিকিউরিটির জন্য পাসওয়ার্ড হাইড করে কনসোলে পেলোড দেখা
+  console.log("📦 [Register Action] Payload prepared:", { 
+    ...payload, 
+    password: "***" 
+  });
+
   const backendBaseUrl =
     process.env.BACKEND_API_URL || "https://amader-patshal-backend.vercel.app";
 
   try {
+    console.log(`🔗 [Register Action] Sending POST request to: ${backendBaseUrl}/api/auth/register`);
+    console.time("⏱️ [Register Action] Backend Response Time"); 
+
     const res = await fetch(`${backendBaseUrl}/api/auth/register`, {
       method: "POST",
       headers: {
@@ -47,11 +58,13 @@ export const registerUser = async (
       body: JSON.stringify(payload),
     });
 
-    // রেসপন্সটি সঠিক JSON ফরম্যাটে আছে কি না তা যাচাই করা
+    console.timeEnd("⏱️ [Register Action] Backend Response Time"); 
+    console.log(`✅ [Register Action] Backend responded with status: ${res.status}`);
+
     const contentType = res.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
       const htmlText = await res.text();
-      console.error("Non-JSON Server Response during register:", htmlText);
+      console.error("❌ [Register Action] Non-JSON Server Response:", htmlText);
       return {
         success: false,
         statusCode: res.status,
@@ -61,34 +74,44 @@ export const registerUser = async (
     }
 
     const result = await res.json();
+    console.log("📄 [Register Action] Backend Result:", result);
 
     if (res.ok && (result.success || res.status === 201)) {
-      // সঠিক নিয়মে শুধু ট্যাগ পাস করা হয়েছে ("max" বাদ দেওয়া হয়েছে)
-      // এভাবে দ্বিতীয় আর্গুমেন্ট দিয়ে দিন
-      revalidateTag("register", "default");
+      console.log("🎉 [Register Action] Registration successful! Revalidating and redirecting...");
+      
+
+      revalidateTag("register", "default"); 
 
       // রেজিস্ট্রেশন সফল হলে সরাসরি লগইন পেজে রিডাইরেক্ট করবে
       redirect("/login");
     }
 
+    console.log("⚠️ [Register Action] Registration failed on backend.");
     return {
       success: false,
       statusCode: result.statusCode || res.status,
       message: result.message || "Registration failed",
       data: {},
     };
-  } catch (error: unknown) {
-    // Next.js এর redirect এক্সসেপশন হ্যান্ডেল করার জন্য সঠিক টাইপ চেক
-    if (error instanceof Error && error.message === "NEXT_REDIRECT") {
-      throw error;
+    
+  } catch (error: unknown) { 
+    // 🌟 ফিক্স: error: any এর পরিবর্তে error: unknown ব্যবহার করা হয়েছে 
+    
+    // Next.js এর redirect এক্সসেপশন হ্যান্ডেল করার জন্য সঠিক Typescript চেক
+    const isRedirectError = 
+      error instanceof Error && 
+      (error.message === "NEXT_REDIRECT" || 
+      (error as Error & { digest?: string }).digest?.startsWith("NEXT_REDIRECT"));
+
+    if (isRedirectError) {
+      throw error; // Redirect error কে throw করতে হয়, catch করা যায় না
     }
 
-    console.error("Register Server Action Error:", error);
+    console.error("❌ [Register Action] Server Action Error:", error);
     return {
       success: false,
       statusCode: 500,
-      message:
-        error instanceof Error ? error.message : "Network or Server error.",
+      message: error instanceof Error ? error.message : "Network or Server error.",
       data: {},
     };
   }
