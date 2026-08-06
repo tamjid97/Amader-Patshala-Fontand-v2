@@ -37,14 +37,16 @@ export const registerUser = async (
     payload.profilePicture = profilePicture;
   }
 
-  // সিকিউরিটির জন্য পাসওয়ার্ড হাইড করে কনসোলে পেলোড দেখা
+  // সিকিউরিটির জন্য পাসওয়ার্ড হাইড করে কনসোলে পেলোড দেখা
   console.log("📦 [Register Action] Payload prepared:", { 
     ...payload, 
     password: "***" 
   });
 
   const backendBaseUrl =
-    process.env.BACKEND_API_URL || "https://amader-patshal-backend.vercel.app";
+    process.env.BACKEND_API_URL ||
+    process.env.NEXT_PUBLIC_BASE_API_URL ||
+    "https://amader-patshal-backend.vercel.app";
 
   try {
     console.log(`🔗 [Register Action] Sending POST request to: ${backendBaseUrl}/api/auth/register`);
@@ -79,8 +81,8 @@ export const registerUser = async (
     if (res.ok && (result.success || res.status === 201)) {
       console.log("🎉 [Register Action] Registration successful! Revalidating and redirecting...");
       
-
-      revalidateTag("register", "default"); 
+      // ✅ ফিক্স: revalidateTag-এর অতিরিক্ত দ্বিতীয় আর্গুমেন্টটি ("default") রিমুভ করা হয়েছে
+      revalidateTag("register","max"); 
 
       // রেজিস্ট্রেশন সফল হলে সরাসরি লগইন পেজে রিডাইরেক্ট করবে
       redirect("/login");
@@ -95,8 +97,6 @@ export const registerUser = async (
     };
     
   } catch (error: unknown) { 
-    // 🌟 ফিক্স: error: any এর পরিবর্তে error: unknown ব্যবহার করা হয়েছে 
-    
     // Next.js এর redirect এক্সসেপশন হ্যান্ডেল করার জন্য সঠিক Typescript চেক
     const isRedirectError = 
       error instanceof Error && 
@@ -104,7 +104,7 @@ export const registerUser = async (
       (error as Error & { digest?: string }).digest?.startsWith("NEXT_REDIRECT"));
 
     if (isRedirectError) {
-      throw error; // Redirect error কে throw করতে হয়, catch করা যায় না
+      throw error; // Redirect error কে throw করতে হয়, catch করা যায় না
     }
 
     console.error("❌ [Register Action] Server Action Error:", error);
