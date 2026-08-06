@@ -154,7 +154,6 @@ export default function PdfPage() {
             setUserRole(fetchedRole);
           }
 
-          // এখানে সবার আগে userData?.class যুক্ত করা হয়েছে কারণ ডাটাবেজে ফিল্ডের নাম 'class'
           const fetchedBatch = 
             userData?.class || 
             userData?.batch || 
@@ -184,7 +183,7 @@ export default function PdfPage() {
           }));
           setPdfs(formatted);
         }
-      } catch (error) {
+      } catch (error)  {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
@@ -212,9 +211,9 @@ export default function PdfPage() {
     return <GlobalLoading />;
   }
 
-  // যেহেতু আপনার রোল 'USER', তাই পরীক্ষামূলকভাবে এটি 'USER' বা 'STUDENT' দুটিতেই কাজ করবে এমনভাবে চেক করা হলো। 
-  // পরবর্তীতে ব্যাকএন্ড থেকে রোল 'STUDENT' করে দিলে এটি অটো কাজ করবে।
-  const isStudent = userRole?.toUpperCase()?.trim() === "STUDENT" || userRole?.toUpperCase()?.trim() === "USER";
+  // কঠোরভাবে চেক করা হলো: শুধুমাত্র রোল 'STUDENT' হলে তবেই স্টুডেন্ট হিসেবে গণ্য হবে। (USER রোল হলে এখানে false আসবে)
+  const roleUpper = userRole?.toUpperCase()?.trim() || "";
+  const isAuthorizedStudent = roleUpper === "STUDENT" || roleUpper === "ADMIN" || roleUpper === "MODERATOR";
 
   return (
     <div className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden">
@@ -319,8 +318,6 @@ export default function PdfPage() {
                 isBatchMatched = false;
               }
 
-              console.log(`[PDF Match Check] Title: "${pdf.title}" | PDF Class: "${pdf.className}" | User Batch: "${userBatch}" | Match Result:`, isBatchMatched);
-
               return (
                 <div 
                   key={pdf.id || index}
@@ -370,28 +367,7 @@ export default function PdfPage() {
 
                     {pdf.pdfUrl && (
                       <>
-                        {!isBatchMatched ? (
-                          <button
-                            onClick={() => {
-                              setModalMessage("এই লেকচার শিটটি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!");
-                              setIsModalOpen(true);
-                            }}
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
-                          >
-                            <Clock className="w-4 h-4 animate-spin" />
-                            Coming Soon
-                          </button>
-                        ) : isStudent ? (
-                          <a
-                            href={pdf.pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
-                          >
-                            <FileText className="w-4 h-4" />
-                            PDF দেখুন
-                          </a>
-                        ) : (
+                        {!isAuthorizedStudent ? (
                           <button
                             onClick={() => {
                               setModalMessage("পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
@@ -402,6 +378,27 @@ export default function PdfPage() {
                             <Lock className="w-4 h-4" />
                             শুধুমাত্র স্টুডেন্টদের জন্য
                           </button>
+                        ) : !isBatchMatched ? (
+                          <button
+                            onClick={() => {
+                              setModalMessage("এই লেকচার শিটটি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!");
+                              setIsModalOpen(true);
+                            }}
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
+                          >
+                            <Clock className="w-4 h-4 animate-spin" />
+                            Coming Soon
+                          </button>
+                        ) : (
+                          <a
+                            href={pdf.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
+                          >
+                            <FileText className="w-4 h-4" />
+                            PDF দেখুন
+                          </a>
                         )}
                       </>
                     )}

@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/toast";
+import { Toaster } from "sonner"; // 🌟 শ্যাডসিএন এর বদলে এখানে 'sonner' দিতে হবে
 import { BioBackground } from "@/components/ui/BioBackground";
 import { ThemeProvider } from '@/components/ui/theme-provider';
 
@@ -47,9 +47,10 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <BioBackground />
-          <Toaster />
           
-          {/* এখানে আর Navbar ও Footer থাকবে না */}
+          {/* 🌟 sonner এর সঠিক Toaster কম্পোনেন্ট */}
+          <Toaster richColors position="top-center" /> 
+          
           {children}
 
           {process.env.NODE_ENV === 'production' && <Analytics />}

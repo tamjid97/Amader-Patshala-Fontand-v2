@@ -35,7 +35,7 @@ export const loginAction = async (prevState: LoginState, formData: FormData) => 
       body: JSON.stringify(payload),
     });
 
-    // সার্ভার থেকে HTML বা ভুল রেসপন্স আসলে যেন কোড ক্র্যাশ না করে
+    // সার্ভার থেকে HTML বা ভুল রেসপন্স আসলে ব্যবহারকারীকে সহজ ভাষায় মেসেজ দেখাবে
     const contentType = res.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
       const htmlText = await res.text();
@@ -43,12 +43,22 @@ export const loginAction = async (prevState: LoginState, formData: FormData) => 
       return {
         success: false,
         statusCode: res.status,
-        message: "Server returned HTML instead of JSON. Check API endpoint.",
+        message: "আপনার অ্যাকাউন্ট নেই অথবা ফোন নম্বর বা পাসওয়ার্ড ভুল। দয়া করে আগে রেজিস্টার করুন।",
         data: { accessToken: "", refreshToken: "" },
       };
     }
 
     const result = await res.json();
+
+    // যদি ব্যাকএন্ড থেকে success: false বা কোনো এরর আসে
+    if (!result.success) {
+      return {
+        success: false,
+        statusCode: result.statusCode || res.status,
+        message: "আপনার অ্যাকাউন্ট নেই অথবা ফোন নম্বর বা পাসওয়ার্ড ভুল। দয়া করে আগে রেজিস্টার করুন।",
+        data: { accessToken: "", refreshToken: "" },
+      };
+    }
 
     if (result.success) {
       const cookieStore = await cookies();
@@ -88,13 +98,13 @@ export const loginAction = async (prevState: LoginState, formData: FormData) => 
     return {
       success: false,
       statusCode: 500,
-      message: "Network or Server error during login.",
+      message: "আপনার অ্যাকাউন্ট নেই অথবা ফোন নম্বর বা পাসওয়ার্ড ভুল। দয়া করে আগে রেজিস্টার করুন।",
       data: { accessToken: "", refreshToken: "" },
     };
   }
 };
 
-// 🌟 ২. বর্তমান লগইনকৃত ইউজারের ডাটা ও রোল পাওয়ার অ্যাকশন (New)
+// 🌟 ২. বর্তমান লগইনকৃত ইউজারের ডাটা ও রোল পাওয়ার অ্যাকশন
 export const getCurrentUser = async () => {
   try {
     const cookieStore = await cookies();

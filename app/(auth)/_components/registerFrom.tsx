@@ -42,9 +42,16 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
     <Button 
       type="submit" 
       disabled={isPending}
-      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
+      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-all duration-300 cursor-pointer"
     >
-      {isPending ? "Creating Account..." : "Register"}
+      {isPending ? (
+        <span className="flex items-center justify-center gap-2">
+          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          অ্যাকাউন্ট তৈরি হচ্ছে, একটু অপেক্ষা করুন...
+        </span>
+      ) : (
+        "Register"
+      )}
     </Button>
   );
 }
@@ -288,7 +295,7 @@ export default function RegisterForm() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 focus:outline-none"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-500 focus:outline-none cursor-pointer"
                   >
                     {showPassword ? (
                       <EyeOff className="h-5 w-5" />

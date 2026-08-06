@@ -18,21 +18,31 @@ export default function LoginForm() {
     if (!state) return;
 
     if (state.success === false) {
-      toast.error(state.message || "Login failed");
+      const errorMsg = state.message ? state.message.toLowerCase() : "";
+      
+      if (
+        errorMsg.includes("not found") || 
+        errorMsg.includes("does not exist") || 
+        errorMsg.includes("invalid") ||
+        errorMsg.includes("wrong") ||
+        errorMsg.includes("match")
+      ) {
+        toast.error("অ্যাকাউন্ট পাওয়া যায়নি বা পাসওয়ার্ড ভুল! দয়া করে আগে রেজিস্টার করুন।");
+      } else {
+        toast.error(state.message || "Login failed");
+      }
     } else if (state.success === true) {
       toast.success("Welcome back to Amader Pathshala!");
     }
   }, [state]);
 
   return (
-    // 🌟 ফুল স্ক্রিন সেন্টারিং এবং ব্যাকগ্রাউন্ড গ্লো ইফেক্ট
     <div className="relative flex min-h-[80vh] w-full items-center justify-center overflow-hidden p-4 md:p-8">
       
-      {/* 🧬 Ambient Biology Theme Glow (পেছনের আবছা আলো) */}
+      {/* Ambient Biology Theme Glow */}
       <div className="pointer-events-none absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-emerald-500/20 blur-[100px]" />
       <div className="pointer-events-none absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-cyan-500/20 blur-[100px]" />
 
-      {/* 🚀 3D Animated Card Container */}
       <motion.div
         initial={{ opacity: 0, y: 30, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -41,7 +51,6 @@ export default function LoginForm() {
       >
         <div className="overflow-hidden rounded-2xl border border-emerald-500/20 bg-white/70 shadow-[0_8px_32px_rgba(16,185,129,0.1)] backdrop-blur-xl dark:bg-slate-950/70 dark:shadow-[0_8px_32px_rgba(16,185,129,0.05)]">
           
-          {/* 🌟 Header Section with DNA Logo */}
           <div className="space-y-2 p-8 pb-4 text-center">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -59,11 +68,9 @@ export default function LoginForm() {
             </p>
           </div>
 
-          {/* 🌟 Form Section */}
           <form action={action} className="space-y-6 p-8 pt-4">
             
             <div className="space-y-4">
-              {/* Phone Number Input */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-slate-700 dark:text-slate-300">
                   Phone Number
@@ -82,15 +89,11 @@ export default function LoginForm() {
                 </div>
               </div>
 
-              {/* Password Input with Eye Toggle */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password" className="text-slate-700 dark:text-slate-300">
                     Password
                   </Label>
-                  {/* <a href="#" className="text-xs text-emerald-600 hover:underline dark:text-emerald-400">
-                    Forgot password?
-                  </a> */}
                 </div>
                 <div className="relative">
                   <Input
@@ -117,7 +120,6 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {/* 🌟 Submit Button */}
             <Button
               type="submit"
               className="group w-full bg-emerald-600 transition-all duration-300 hover:bg-emerald-700 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] dark:bg-emerald-600 dark:hover:bg-emerald-500"
@@ -142,7 +144,6 @@ export default function LoginForm() {
               )}
             </Button>
 
-            {/* Signup Link */}
             <p className="text-center text-sm text-slate-500 dark:text-slate-400">
               Don&apos;t have an account?{" "}
               <a href="/register" className="font-semibold text-emerald-600 hover:underline dark:text-emerald-400">
