@@ -15,7 +15,6 @@ export default function PicSlider() {
   const swiperRef = useRef<any>(null);
 
   const brandlogos = [
-    { img: "/Students/mm.jpeg", alt: "Student Batch 1" },
     { img: "/Students/1.jpeg", alt: "Student Batch 1" },
     { img: "/Students/2.jpeg", alt: "Student Batch 2" },
     { img: "/Students/3.jpeg", alt: "Student Batch 3" },
