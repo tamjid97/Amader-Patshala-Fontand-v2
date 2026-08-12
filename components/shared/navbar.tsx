@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import * as React from "react"
 import Link from "next/link"
@@ -64,6 +64,7 @@ const navLinks = [
   { label: "Home", href: "/", protected: false },
   { label: "Batch Time", href: "/batchTime", protected: true },
   { label: "Material", href: "/material", protected: true },
+  { label: "QNA", href: "/qna", protected: true },
   { label: "Result", href: "/result", protected: true },
 ]
 
@@ -144,6 +145,7 @@ function BrandLogo() {
 }
 
 function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) {
+  const router = useRouter() 
   const BACKEND_URL = process.env.NEXT_PUBLIC_BASE_API_URL || "http://localhost:5000";
   let profilePic = user?.data?.profilePicture;
 
@@ -152,7 +154,6 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
     profilePic = `${BACKEND_URL}/${cleanPath.startsWith("/") ? cleanPath.slice(1) : cleanPath}`;
   }
 
-  // Date.now() বাদ দিয়ে শুধু updatedAt ব্যবহার করা হলো যা React-এর purity রুল মেনে চলে
   const updateToken = user?.data?.updatedAt ? encodeURIComponent(user.data.updatedAt) : "1";
   const finalProfilePic = profilePic ? `${profilePic}?t=${updateToken}` : null;
 
@@ -219,7 +220,7 @@ function ProfileMenu({ user, onLogout }: { user: IUser; onLogout: () => void }) 
           {menuItems.map((item) => (
             <DropdownMenuItem 
               key={item.label} 
-              render={<Link href={item.href} />}
+              onClick={() => router.push(item.href)}
               className="hover:bg-emerald-200/60 dark:hover:bg-emerald-900/50 cursor-pointer text-emerald-950 dark:text-emerald-100 transition-colors font-medium flex items-center w-full"
             >
               <item.icon className="mr-2 h-4 w-4 text-emerald-700 dark:text-emerald-400" />
@@ -306,7 +307,7 @@ export function Navbar({ user }: NavbarProps) {
                         "rounded-md px-3 py-2 text-sm font-bold transition-all",
                         isActive 
                           ? "bg-emerald-300/80 text-emerald-950 dark:bg-emerald-900/80 dark:text-emerald-50 shadow-sm" 
-                          : "text-emerald-900/80 dark:text-emerald-300/80 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40 hover:text-emerald-950 dark:hover:text-emerald-100"
+                          : "text-emerald-950 dark:text-emerald-100 hover:bg-emerald-200/50 dark:hover:bg-emerald-900/40 hover:text-emerald-950 dark:hover:text-white"
                       )}
                     >
                       {link.label}
@@ -336,10 +337,17 @@ export function Navbar({ user }: NavbarProps) {
                   "relative rounded-full px-5 py-1.5 text-sm font-bold transition-all duration-300",
                   isActive 
                     ? "text-emerald-950 bg-white/80 dark:text-emerald-50 dark:bg-emerald-600/40 shadow-sm scale-105" 
-                    : "text-emerald-900/70 dark:text-emerald-300/70 hover:text-emerald-950 dark:hover:text-emerald-100 hover:bg-white/50 dark:hover:bg-emerald-900/30"
+                    : "text-emerald-950 dark:text-emerald-100 hover:text-emerald-950 dark:hover:text-white hover:bg-white/50 dark:hover:bg-emerald-900/30"
                 )}
               >
                 {link.label}
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavIndicator"
+                    className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-6 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
               </Link>
             )
           })}

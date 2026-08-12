@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, FileText, Sparkles, Dna, GraduationCap, Users, Calendar, Lock, X, Clock } from "lucide-react";
+import { Search, HelpCircle, Sparkles, Dna, Calendar, Lock, X, Clock, MessageCircleQuestion } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPdfs } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/pdf";
 import { getMe } from "../_acttion/profile";
@@ -49,9 +49,9 @@ const CartoonFlask = () => (
 );
 
 const loadingTexts = [
-  "Preparing study materials...",
-  "Organizing chapters...",
-  "Loading PDFs...",
+  "Preparing Q&A materials...",
+  "Organizing questions...",
+  "Loading answers...",
   "Almost ready...",
 ];
 
@@ -112,40 +112,39 @@ function GlobalLoading() {
   );
 }
 
-interface IPdf {
+interface IQna {
   id?: string;
   _id?: string;
   title: string;
   subject?: string;
   className?: string;
-  category?: string;
+  category?: string; 
   pdfUrl?: string;
   link?: string;
   image?: string;
   createdAt?: string;
 }
 
-export default function PdfPage() {
-  const [pdfs, setPdfs] = useState<IPdf[]>([]);
+export default function QNA() {
+  const [qnas, setQnas] = useState<IQna[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userBatch, setUserBatch] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"HSC" | "SSC">("HSC");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
+  const [modalMessage, setModalMessage] = useState("Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [pdfResponse, userResponse] = await Promise.all([
+        const [qnaResponse, userResponse] = await Promise.all([
           getPdfs(),
           getMe(),
         ]);
 
         if (userResponse) {
           const userData = userResponse?.data?.user || userResponse?.data || userResponse?.user || userResponse;
-
+          
           const fetchedRole = userData?.role;
           if (fetchedRole) {
             setUserRole(fetchedRole);
@@ -164,10 +163,27 @@ export default function PdfPage() {
           }
         }
 
-        const rawData = Array.isArray(pdfResponse) ? pdfResponse : pdfResponse?.data;
-        if (Array.isArray(rawData)) {
-          const formatted = rawData.map((item: Record<string, unknown>) => ({
-            ...(item as unknown as IPdf),
+        const rawData = Array.isArray(qnaResponse) ? qnaResponse : qnaResponse?.data;
+        
+        if (qnaResponse?.success && Array.isArray(rawData)) {
+          // ফ্লেক্সিবল ফিল্টারিং: category, type, tag বা className এ qna থাকলেই তা গ্রহণ করবে
+          const filteredByCategory = rawData.filter((item: any) => {
+             const cat = (item.category || "").toLowerCase().trim();
+             const type = (item.type || "").toLowerCase().trim();
+             const tag = (item.tag || "").toLowerCase().trim();
+             const cName = (item.className || "").toLowerCase().trim();
+
+             return (
+               cat.includes("qna") || 
+               cat.includes("question") || 
+               type.includes("qna") || 
+               tag.includes("qna") ||
+               cName.includes("qna")
+             );
+          });
+
+          const formatted = filteredByCategory.map((item: Record<string, unknown>) => ({
+            ...(item as unknown as IQna),
             id: (item._id as string) || (item.id as string) || "",
             pdfUrl: (item.pdfUrl as string) || (item.link as string) || "",
             image: (item.image as string) || "",
@@ -180,7 +196,7 @@ export default function PdfPage() {
             return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           });
           
-          setPdfs(formatted);
+          setQnas(formatted);
         }
       } catch (error)  {
         console.error("Error fetching data:", error);
@@ -191,32 +207,12 @@ export default function PdfPage() {
     fetchData();
   }, []);
 
-  const filteredPdfs = pdfs.filter((pdf) => {
-    const className = (pdf.className || "").toLowerCase();
-    const category = (pdf.category || "").toLowerCase();
-    const type = (pdf.type || "").toLowerCase();
-
-    // যদি className, category বা type-এ 'qna' বা 'question' থাকে, তবে তা এই পিডিএফ পেজে দেখাবে না
-    if (
-      className.includes("qna") || 
-      category.includes("qna") || 
-      type.includes("qna") ||
-      className.includes("question") ||
-      category.includes("question")
-    ) {
-      return false;
-    }
-
-    const isSsc = className.includes("ssc") || className.includes("class 9") || className.includes("class 10");
-    
-    if (activeTab === "SSC" && !isSsc) return false;
-    if (activeTab === "HSC" && isSsc) return false;
-
+  const filteredQnas = qnas.filter((qna) => {
     const query = searchTerm.toLowerCase();
     return (
-      (pdf.title || "").toLowerCase().includes(query) ||
-      (pdf.subject || "").toLowerCase().includes(query) ||
-      (pdf.className || "").toLowerCase().includes(query)
+      (qna.title || "").toLowerCase().includes(query) ||
+      (qna.subject || "").toLowerCase().includes(query) ||
+      (qna.className || "").toLowerCase().includes(query)
     );
   });
 
@@ -239,47 +235,19 @@ export default function PdfPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-300/50 dark:border-emerald-800/60 rounded-full mb-4 backdrop-blur-md shadow-sm">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
             <span className="text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase tracking-widest">
-              স্টাডি ম্যাটেরিয়ালস ও লেকচার শিট
+              প্রশ্ন ও সমাধান (Q&A)
             </span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-emerald-50 tracking-tight leading-tight">
-            সকল পিডিএফ লেকচার শিট
+            সকল প্রশ্নোত্তর ও সমাধান
           </h1>
           
           <div className="h-1.5 w-32 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 rounded-full mt-4 mb-6 shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
           
           <p className="text-slate-600 dark:text-emerald-100/70 max-w-2xl text-base md:text-lg font-medium leading-relaxed">
-            আপনার প্রয়োজনীয় অধ্যায়ের নোট বা পিডিএফ সহজে খুঁজে পেতে নিচের অপশনগুলো ব্যবহার করুন।
+            আপনার প্রয়োজনীয় প্রশ্ন, সৃজনশীল ও নৈর্ব্যক্তিক সমাধানগুলো সহজে খুঁজে পেতে নিচের সার্চ অপশনটি ব্যবহার করুন।
           </p>
-        </div>
-
-        <div className="flex justify-center animate-in fade-in duration-700">
-          <div className="flex p-1.5 bg-white/90 dark:bg-[#071712]/90 backdrop-blur-2xl rounded-2xl shadow-xl shadow-emerald-950/10 border border-emerald-100 dark:border-emerald-900/40">
-            <button
-              onClick={() => setActiveTab("HSC")}
-              className={`flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-sm transition-all duration-300 ${
-                activeTab === "HSC"
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30 scale-100"
-                  : "text-slate-600 dark:text-emerald-200/70 hover:text-emerald-700 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 scale-95"
-              }`}
-            >
-              <GraduationCap className="w-5 h-5" />
-              HSC Batches
-            </button>
-
-            <button
-              onClick={() => setActiveTab("SSC")}
-              className={`flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-sm transition-all duration-300 ${
-                activeTab === "SSC"
-                  ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-600/30 scale-100"
-                  : "text-slate-600 dark:text-emerald-200/70 hover:text-emerald-700 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/20 scale-95"
-              }`}
-            >
-              <Users className="w-5 h-5" />
-              SSC Batches
-            </button>
-          </div>
         </div>
 
         <div className="flex justify-center animate-in fade-in duration-700 mt-6 w-full px-4">
@@ -293,7 +261,7 @@ export default function PdfPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="অধ্যায়ের নাম, বিষয় বা ক্লাস দিয়ে সার্চ করুন..."
+                placeholder="অধ্যায়ের নাম, বিষয় বা প্রশ্ন দিয়ে সার্চ করুন..."
                 className="w-full bg-transparent text-slate-800 dark:text-emerald-50 placeholder-slate-400 dark:placeholder-emerald-200/50 focus:outline-none font-semibold text-base sm:text-lg px-2"
               />
               <button 
@@ -307,24 +275,24 @@ export default function PdfPage() {
           </div>
         </div>
 
-        {filteredPdfs.length > 0 ? (
+        {filteredQnas.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
-            {filteredPdfs.map((pdf, index) => {
-              const pdfClassStr = (pdf.className || "").toLowerCase();
+            {filteredQnas.map((qna, index) => {
+              const qnaClassStr = (qna.className || "").toLowerCase();
               const userBatchStr = (userBatch || "").toLowerCase().trim();
 
               let isBatchMatched = false;
 
               if (userBatchStr !== "") {
                 const userBatchMatches = userBatchStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
-                const pdfBatchMatches = pdfClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+                const qnaBatchMatches = qnaClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
 
-                if (userBatchMatches.length > 0 && pdfBatchMatches.length > 0) {
+                if (userBatchMatches.length > 0 && qnaBatchMatches.length > 0) {
                   isBatchMatched = userBatchMatches.some((u) =>
-                    pdfBatchMatches.some((p) => p.includes(u) || u.includes(p))
+                    qnaBatchMatches.some((p) => p.includes(u) || u.includes(p))
                   );
                 } else {
-                  isBatchMatched = pdfClassStr.includes(userBatchStr);
+                  isBatchMatched = qnaClassStr.includes(userBatchStr);
                 }
               } else {
                 isBatchMatched = false;
@@ -332,19 +300,19 @@ export default function PdfPage() {
 
               return (
                 <div 
-                  key={pdf.id || index}
+                  key={qna.id || index}
                   className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 animate-in fade-in slide-in-from-bottom-8 border border-emerald-900/30 bg-slate-900"
                   style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
                 >
-                  {pdf.image ? (
+                  {qna.image ? (
                     <img 
-                      src={pdf.image} 
-                      alt={pdf.title} 
+                      src={qna.image} 
+                      alt={qna.title} 
                       className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85" 
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-slate-950 flex items-center justify-center">
-                      <FileText className="w-16 h-16 text-emerald-500/40" />
+                      <MessageCircleQuestion className="w-16 h-16 text-emerald-500/40" />
                     </div>
                   )}
 
@@ -354,35 +322,35 @@ export default function PdfPage() {
                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
                       <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                       <span className="text-xs font-bold tracking-wide">
-                        {pdf.createdAt ? new Date(pdf.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : 'সাম্প্রতিক'}
+                        {qna.createdAt ? new Date(qna.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : 'সাম্প্রতিক'}
                       </span>
                     </div>
 
-                    {pdf.className && (
+                    {qna.className && (
                       <span className="px-3 py-1 bg-emerald-600/90 backdrop-blur-md text-white font-extrabold text-[11px] rounded-full shadow-lg border border-emerald-400/30">
-                        {pdf.className}
+                        {qna.className}
                       </span>
                     )}
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
                     
-                    {pdf.subject && (
+                    {qna.subject && (
                       <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
-                        {pdf.subject}
+                        {qna.subject}
                       </span>
                     )}
 
                     <h3 className="text-xl font-black text-white tracking-tight drop-shadow-md line-clamp-2">
-                      {pdf.title}
+                      {qna.title}
                     </h3>
 
-                    {pdf.pdfUrl && (
+                    {qna.pdfUrl && (
                       <>
                         {!isAuthorizedStudent ? (
                           <button
                             onClick={() => {
-                              setModalMessage("পিডিএফ দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
+                              setModalMessage("Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
                               setIsModalOpen(true);
                             }}
                             className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
@@ -393,7 +361,7 @@ export default function PdfPage() {
                         ) : !isBatchMatched ? (
                           <button
                             onClick={() => {
-                              setModalMessage("এই লেকচার শিটটি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!");
+                              setModalMessage("এই Q&A টি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!");
                               setIsModalOpen(true);
                             }}
                             className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
@@ -403,13 +371,13 @@ export default function PdfPage() {
                           </button>
                         ) : (
                           <a
-                            href={pdf.pdfUrl}
+                            href={qna.pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
                           >
-                            <FileText className="w-4 h-4" />
-                            PDF দেখুন
+                            <HelpCircle className="w-4 h-4" />
+                            সমাধান দেখুন
                           </a>
                         )}
                       </>
@@ -424,10 +392,10 @@ export default function PdfPage() {
           <div className="flex flex-col items-center justify-center py-16 animate-in fade-in duration-700">
             <div className="px-10 py-10 bg-white/85 dark:bg-[#05130d]/85 backdrop-blur-2xl border border-emerald-100 dark:border-emerald-900/40 rounded-3xl text-center shadow-2xl max-w-md">
               <h3 className="text-2xl font-black text-slate-800 dark:text-emerald-100 mb-2">
-                কোনো পিডিএফ পাওয়া যায়নি
+                কোনো Q&A পাওয়া যায়নি
               </h3>
               <p className="text-slate-500 dark:text-emerald-200/60 font-medium text-sm">
-                {searchTerm ? "আপনার সার্চের সাথে মিলে এমন কোনো পিডিএফ নেই।" : `বর্তমানে ${activeTab} এর জন্য কোনো পিডিএফ আপলোড করা হয়নি।`}
+                {searchTerm ? "আপনার সার্চের সাথে মিলে এমন কোনো Q&A নেই।" : "বর্তমানে কোনো Q&A আপলোড করা হয়নি।"}
               </p>
             </div>
           </div>

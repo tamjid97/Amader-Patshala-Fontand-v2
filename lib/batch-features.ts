@@ -16,6 +16,8 @@ export type BatchFeature = {
   description: string
   benefits: string[]
   includes: string[]
+  teaser?: string // 🌟 New: যুক্ত করা হলো
+  tag?: string    // 🌟 New: যুক্ত করা হলো
 }
 
 export const batchFeatures: BatchFeature[] = [
@@ -24,6 +26,8 @@ export const batchFeatures: BatchFeature[] = [
     title: 'অধ্যায়ভিত্তিক',
     subtitle: 'Practice Sheet',
     icon: FileText,
+    teaser: 'বেসিক থেকে প্রো লেভেলে যাওয়ার জন্য স্পেশাল সিলেক্টিভ প্রশ্ন ও সল্যুশন।',
+    tag: 'Premium',
     description:
       'প্রতিটি অধ্যায় শেষ হওয়ার সাথে সাথেই তৈরি করা প্র্যাকটিস শীট, যেখানে সহজ থেকে কঠিন — সব লেভেলের প্রশ্ন ধাপে ধাপে সাজানো আছে।',
     benefits: [
@@ -42,6 +46,8 @@ export const batchFeatures: BatchFeature[] = [
     title: 'MCQ',
     subtitle: 'Master Book',
     icon: BookOpen,
+    teaser: 'ভর্তি পরীক্ষার হুবহু কমন পেতে শর্টকাট টেকনিক ও ৫০০০+ প্রশ্নের ব্যাখ্যা।',
+    tag: 'Hot',
     description:
       'বোর্ড ও ভর্তি পরীক্ষার প্যাটার্ন বিশ্লেষণ করে সাজানো হাজারো MCQ-এর সম্পূর্ণ সংকলন, প্রতিটি উত্তরের পেছনের ব্যাখ্যা সহ।',
     benefits: [
@@ -60,6 +66,7 @@ export const batchFeatures: BatchFeature[] = [
     title: 'Q&A',
     subtitle: 'জ্ঞানমূলক + অনুধাবন',
     icon: MessageSquare,
+    teaser: 'বোর্ড পরীক্ষায় ফুল মার্কস তুলতে টিচারদের সাজেস্ট করা রেডিমেড উত্তরপত্র।',
     description:
       'জ্ঞানমূলক ও অনুধাবনমূলক প্রশ্নের রেডিমেড উত্তর, যা লিখিত পরীক্ষায় পূর্ণ নম্বর পাওয়ার মতো করে গুছিয়ে লেখা।',
     benefits: [
@@ -78,6 +85,8 @@ export const batchFeatures: BatchFeature[] = [
     title: 'Board Question',
     subtitle: 'Analysis & Suggestion',
     icon: BarChart3,
+    teaser: 'বিগত ১০ বছরের বোর্ড প্রশ্নের নাড়ি-নক্ষত্র বিশ্লেষণ ও ১০০% কমন সাজেশন।',
+    tag: 'Must Have',
     description:
       'গত ১০ বছরের সব বোর্ডের প্রশ্ন বিশ্লেষণ করে তৈরি ডেটা-ভিত্তিক সাজেশন — কোন টপিক থেকে কতবার প্রশ্ন এসেছে তার পূর্ণ চিত্র।',
     benefits: [
@@ -96,6 +105,7 @@ export const batchFeatures: BatchFeature[] = [
     title: 'উইকলি ও মেগা এক্সাম',
     subtitle: 'Weekly & Mega Exam',
     icon: GraduationCap,
+    teaser: 'নিজেকে যাচাই করার সেরা মাধ্যম, সাথে লিডারবোর্ডে নিজের অবস্থান দেখার সুযোগ।',
     description:
       'প্রতি সপ্তাহে অধ্যায়ভিত্তিক পরীক্ষা এবং নির্দিষ্ট সময় পর পর ফুল সিলেবাসের মেগা এক্সাম, সাথে বিস্তারিত রেজাল্ট অ্যানালাইসিস।',
     benefits: [
@@ -114,6 +124,8 @@ export const batchFeatures: BatchFeature[] = [
     title: 'দাগানো বইয়ের PDF',
     subtitle: 'Marked Book PDF',
     icon: BookMarked,
+    teaser: 'টিচারদের নিজের হাতে হাইলাইট করা স্পেশাল নোটস, রিভিশন হবে চোখের পলকে!',
+    tag: 'Top Rated',
     description:
       'অভিজ্ঞ শিক্ষকদের হাতে দাগানো মূল বইয়ের PDF — কোন লাইনটা পরীক্ষার জন্য জরুরি, তা রঙিন হাইলাইট করে দেখানো।',
     benefits: [
