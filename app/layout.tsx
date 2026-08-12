@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   authors: [{ name: 'S M Tamjid Hossain Epick', url: 'https://epickdev.vercel.app' }],
   keywords: ['Roots Of Biology Khulna', 'S M Tamjid Hossain Epick', 'epickdev', 'Biology Coaching in Khulna'],
   icons: {
-    icon: "/icon.png",
+    icon: "/logo.jpeg",
   },
   verification: {
     google: "u65A3s1E0iXmSw_XSsShNEhKvTnYIahazml2LoglxqA",
