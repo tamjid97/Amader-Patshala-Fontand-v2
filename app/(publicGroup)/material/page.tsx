@@ -119,6 +119,7 @@ interface IPdf {
   subject?: string;
   className?: string;
   category?: string;
+  type?: string; // <--- এখানে type প্রপার্টি যুক্ত করা হয়েছে
   pdfUrl?: string;
   link?: string;
   image?: string;
@@ -175,6 +176,7 @@ export default function PdfPage() {
             subject: (item.subject as string) || "",
             className: (item.className as string) || "",
             category: (item.category as string) || "",
+            type: (item.type as string) || "",
             createdAt: (item.createdAt as string) || new Date().toISOString().split("T")[0],
           })).sort((a, b) => {
             return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
