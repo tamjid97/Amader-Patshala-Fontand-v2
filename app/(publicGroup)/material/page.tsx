@@ -180,7 +180,11 @@ export default function PdfPage() {
             subject: (item.subject as string) || "",
             className: (item.className as string) || "",
             createdAt: (item.createdAt as string) || new Date().toISOString().split("T")[0],
-          }));
+          })).sort((a, b) => {
+            // পুরনো থেকে নতুন (Ascending) অর্ডারে সাজানোর জন্য
+            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          });
+          
           setPdfs(formatted);
         }
       } catch (error)  {
@@ -211,7 +215,6 @@ export default function PdfPage() {
     return <GlobalLoading />;
   }
 
-  // কঠোরভাবে চেক করা হলো: শুধুমাত্র রোল 'STUDENT' হলে তবেই স্টুডেন্ট হিসেবে গণ্য হবে। (USER রোল হলে এখানে false আসবে)
   const roleUpper = userRole?.toUpperCase()?.trim() || "";
   const isAuthorizedStudent = roleUpper === "STUDENT" || roleUpper === "ADMIN" || roleUpper === "MODERATOR";
 

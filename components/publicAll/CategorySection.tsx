@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-
+import Link from "next/link"; // Next.js লিংকের জন্য
 
 // Premium Custom SVG Characters (Peekaboo effect)
 const UniqueCharacters = [
@@ -97,22 +97,17 @@ const UniqueCharacters = [
 ];
 
 const categories = [
-  { id: 0, type: "HSC", year: "27", icon: "🏆", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#0B1D3A] to-[#043D5C]", glow: "shadow-[0_15px_30px_rgba(10,135,158,0.25)]" },
-  { id: 1, type: "HSC", year: "28", icon: "🎯", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#1E0B3A] to-[#431B6D]", glow: "shadow-[0_15px_30px_rgba(157,54,179,0.25)]" },
-  { id: 2, type: "SSC", year: "27", icon: "🎒", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#3A180B] to-[#6b2c05]", glow: "shadow-[0_15px_30px_rgba(217,108,24,0.25)]" },
-  { id: 3, type: "SSC", year: "28", icon: "📜", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#3A0B1A] to-[#6b102e]", glow: "shadow-[0_15px_30px_rgba(229,50,101,0.25)]" },
-  { id: 4, type: "SSC", year: "FRB", icon: "⚡", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#290B3A] to-[#500f59]", glow: "shadow-[0_15px_30px_rgba(207,38,121,0.25)]" },
-  { id: 5, type: "CLASS", year: "9", icon: "📚", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#0B3A23] to-[#095431]", glow: "shadow-[0_15px_30px_rgba(21,176,99,0.25)]" },
+  { id: 0, type: "HSC", year: "27", icon: "🏆", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#0B1D3A] to-[#043D5C]", glow: "shadow-[0_15px_30px_rgba(10,135,158,0.25)]", link: "/batchTime" },
+  { id: 1, type: "HSC", year: "28", icon: "🎯", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#1E0B3A] to-[#431B6D]", glow: "shadow-[0_15px_30px_rgba(157,54,179,0.25)]", link: "/batchTime" },
+  { id: 2, type: "SSC", year: "27", icon: "🎒", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#3A180B] to-[#6b2c05]", glow: "shadow-[0_15px_30px_rgba(217,108,24,0.25)]", link: "/batchTime" },
+  { id: 3, type: "SSC", year: "28", icon: "📜", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#3A0B1A] to-[#6b102e]", glow: "shadow-[0_15px_30px_rgba(229,50,101,0.25)]", link: "/batchTime" },
+  { id: 4, type: "SSC", year: "FRB", icon: "⚡", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#290B3A] to-[#500f59]", glow: "shadow-[0_15px_30px_rgba(207,38,121,0.25)]", link: "/batchTime" },
+  { id: 5, type: "CLASS", year: "9", icon: "📚", badge: "২০২৬ সালে ভর্তি চলছে", colorClass: "bg-gradient-to-b from-[#0B3A23] to-[#095431]", glow: "shadow-[0_15px_30px_rgba(21,176,99,0.25)]", link: "/batchTime" },
 ];
 
 export default function CategoryCards() {
-  const soundUrl = "https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"; 
-
-
-
-
   return (
-    <section className="relative w-full pt-6 pb-16 sm:pt-10 sm:pb-24 bg-transparent font-sans  overflow-hidden">
+    <section className="relative w-full pt-6 pb-16 sm:pt-10 sm:pb-24 bg-transparent font-sans overflow-hidden">
       
       {/* Background Decorative Premium Orbs */}
       <div className="absolute top-1/4 left-10 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-cyan-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -130,7 +125,7 @@ export default function CategoryCards() {
           </h3>
         </div>
         
-        {/* Grid Layout - Mobile: 2 Columns Side by Side, Tablet: 3, Desktop: 6 */}
+        {/* Grid Layout */}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-x-3 sm:gap-x-6 gap-y-24 sm:gap-y-28 mt-4 sm:mt-8 px-1 sm:px-0">
           {categories.map((item, index) => {
             const waveAnimationClass = `animate-wave-${index}`;
@@ -138,17 +133,17 @@ export default function CategoryCards() {
             return (
               <div key={item.id} className="relative group w-full flex flex-col items-center mt-10 sm:mt-12">
                 
-                {/* === PEEKABOO CARTOON (Triangle Sequential Wave) === */}
+                {/* === PEEKABOO CARTOON === */}
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 w-20 h-20 sm:w-24 sm:h-24 pointer-events-none z-0 overflow-visible">
                   <div className={`w-full h-full flex items-center justify-center ${waveAnimationClass}`}>
                     {UniqueCharacters[index]}
                   </div>
                 </div>
 
-                {/* === MAIN PREMIUM 3D CARD (z-10 to stay strictly in front of the cartoon) === */}
-                <div 
-                  
-                  className={`relative w-full h-[170px] sm:h-[200px] cursor-pointer rounded-[22px] sm:rounded-[28px] z-10 transition-all duration-500 hover:-translate-y-2.5 hover:scale-[1.04] ${item.glow} shadow-[0_10px_20px_rgba(0,0,0,0.3)]`}
+                {/* === MAIN 3D CARD WRAPPED WITH LINK === */}
+                <Link 
+                  href={item.link}
+                  className={`relative w-full h-[170px] sm:h-[200px] cursor-pointer rounded-[22px] sm:rounded-[28px] z-10 transition-all duration-500 hover:-translate-y-2.5 hover:scale-[1.04] ${item.glow} shadow-[0_10px_20px_rgba(0,0,0,0.3)] block`}
                 >
                   {/* Premium Glossy Inner Block */}
                   <div className={`relative w-full h-full rounded-[22px] sm:rounded-[28px] overflow-hidden flex flex-col items-center justify-start pt-4 sm:pt-6 ${item.colorClass} border border-white/30 border-b-black/60 shadow-[inset_0_4px_15px_rgba(255,255,255,0.25),_inset_0_-4px_15px_rgba(0,0,0,0.4)]`}>
@@ -177,12 +172,12 @@ export default function CategoryCards() {
                     </div>
 
                   </div>
-                </div>
+                </Link>
 
                 {/* === DETACHED, BLINKING RED LAMP & ADMISSION TEXT === */}
                 <div className="absolute -bottom-9 sm:-bottom-10 left-1/2 -translate-x-1/2 z-30 w-full flex justify-center">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); }}
+                  <Link
+                    href={item.link}
                     className="relative flex items-center justify-center cursor-pointer group/badge transition-transform duration-300 hover:scale-105"
                   >
                     {/* Soft Glowing Red Background Light */}
@@ -197,7 +192,7 @@ export default function CategoryCards() {
                       </span>
                       {item.badge}
                     </div>
-                  </button>
+                  </Link>
                 </div>
 
               </div>
@@ -206,7 +201,7 @@ export default function CategoryCards() {
         </div>
       </div>
       
-      {/* Custom Keyframes for Triangle Sequence & Blinking Red Light */}
+      {/* Custom Keyframes */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes wave0 {
           0%, 5% { transform: translateY(45px); }
@@ -239,7 +234,6 @@ export default function CategoryCards() {
           55%, 100% { transform: translateY(45px); }
         }
 
-        /* Adjust rise height on larger screens */
         @media (min-width: 640px) {
           @keyframes wave0 { 0%, 5% { transform: translateY(45px); } 10%, 75% { transform: translateY(-88px); } 80%, 100% { transform: translateY(45px); } }
           @keyframes wave1 { 0%, 10% { transform: translateY(45px); } 15%, 70% { transform: translateY(-88px); } 75%, 100% { transform: translateY(45px); } }
