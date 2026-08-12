@@ -43,11 +43,7 @@ const USER_SIDEBAR_ITEMS: ISidebarItem[] = [
     href: "/user_dashboard/request-student",
     icon: UserCheck,
   },
-  {
-    label: "Request Moderator",
-    href: "/user_dashboard/request-moderator",
-    icon: ShieldPlus,
-  },
+
 ];
 
 export const MODERATOR_SIDEBAR_ITEMS: ISidebarItem[] = [
