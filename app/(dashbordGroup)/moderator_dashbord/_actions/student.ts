@@ -19,6 +19,12 @@ interface IBackendUserItem {
     createdAt?: string;
     profilePicture?: string | null;
     image?: string | null;
+    studentId?: string | null;
+    role?: string;
+    class?: string; // Added class
+    className?: string; // Fallback for class
+    institute?: string; // Added institute
+    school?: string; // Fallback for institute
     [key: string]: unknown;
 }
 
@@ -94,6 +100,78 @@ export async function getStudentRequestsAction(): Promise<ResponseState> {
     }
 }
 
+export async function getStudentDetailsAction(id: string): Promise<ResponseState> {
+    try {
+        const cookieStore = await cookies();
+        const accessToken = 
+            cookieStore.get("accessToken")?.value || 
+            cookieStore.get("token")?.value || 
+            cookieStore.get("authToken")?.value;
+
+        if (!accessToken) {
+            return {
+                success: false,
+                message: "Unauthorized! Please login first.",
+            };
+        }
+
+        const res = await fetch(`https://amader-patshal-backend.vercel.app/api/moderator/details/${id}`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            cache: "no-store",
+        });
+
+        const textResponse = await res.text();
+        let result;
+        try {
+            result = JSON.parse(textResponse);
+        } catch (e) {
+            return {
+                success: false,
+                message: "Failed to parse data from server.",
+            };
+        }
+
+        if (result?.success && result?.data) {
+            const item = result.data as IBackendUserItem;
+            
+            // 🌟 ডাটা প্রপারলি ম্যাপ করা হয়েছে
+            const formattedData = {
+                id: item.id,
+                name: item.name || "Unknown User",
+                email: item.email || item.phoneNumber || "N/A",
+                status: (item.isApproved || "PENDING").trim().toUpperCase(),
+                requestDate: item.createdAt ? item.createdAt.split("T")[0] : new Date().toISOString().split("T")[0],
+                image: item.profilePicture || item.image || "",
+                studentId: item.studentId || "N/A",
+                role: item.role || "STUDENT",
+                class: item.class || item.className || "Not provided", // 🌟 Class Added
+                institute: item.institute || item.school || "Not provided", // 🌟 Institute Added
+            };
+
+            return {
+                success: true,
+                message: result.message || "Details fetched successfully",
+                data: formattedData,
+            };
+        } else {
+            return {
+                success: false,
+                message: result.message || "Student details not found.",
+            };
+        }
+    } catch (error) {
+        console.error("Error fetching student details:", error);
+        return {
+            success: false,
+            message: "Something went wrong while fetching student details.",
+        };
+    }
+}
+
 export async function updateStudentRequestStatusAction(
     requestId: string,
     status: "APPROVED" | "REJECTED"
@@ -125,11 +203,10 @@ export async function updateStudentRequestStatusAction(
         try {
             result = JSON.parse(textResponse);
         } catch (e) {
-            // 🌟 যদি ব্যাকএন্ড 500 HTML পেজ দেয়, তবে এখানে তা ধরা পড়বে
             console.error("Backend returned HTML instead of JSON:", textResponse.substring(0, 100));
             return {
                 success: false,
-                message: `Server Error (500): ব্যাকএন্ড লাইভ সার্ভারে সমস্যা হচ্ছে। দয়া করে Vercel-এর লগ চেক করুন।`,
+                message: `Server Error (500): ব্যাকএন্ড লাইভ সার্ভারে সমস্যা হচ্ছে।`,
             };
         }
 
