@@ -11,8 +11,18 @@ import {
   X,
   Clock,
   MessageCircleQuestion,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Autoplay, Pagination } from "swiper/modules";
+
+// Swiper CSS import
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 import { getPdfs } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/pdf";
 import { getMe } from "../_acttion/profile";
 
@@ -105,9 +115,9 @@ const CartoonFlask = () => (
 );
 
 const loadingTexts = [
-  "Preparing Q&A materials...",
-  "Organizing questions...",
-  "Loading answers...",
+  "Preparing daily class materials...",
+  "Organizing slide contents...",
+  "Loading daily updates...",
   "Almost ready...",
 ];
 
@@ -202,7 +212,7 @@ export default function QNA() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMessage, setModalMessage] = useState(
-    "Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।",
+    "ক্লাস স্লাইড দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।"
   );
 
   useEffect(() => {
@@ -244,7 +254,6 @@ export default function QNA() {
           : qnaResponse?.data;
 
         if (qnaResponse?.success && Array.isArray(rawData)) {
-          // ফ্লেক্সিবল ফিল্টারিং: category, type, tag বা className এ qna থাকলেই তা গ্রহণ করবে
           const filteredByCategory = rawData.filter((item: any) => {
             const cat = (item.category || "").toLowerCase().trim();
             const type = (item.type || "").toLowerCase().trim();
@@ -252,11 +261,10 @@ export default function QNA() {
             const cName = (item.className || "").toLowerCase().trim();
 
             return (
-              cat.includes("qna") ||
-              cat.includes("question") ||
-              type.includes("qna") ||
-              tag.includes("qna") ||
-              cName.includes("qna")
+              cat.includes("slider") ||
+              type.includes("slider") ||
+              tag.includes("slider") ||
+              cName.includes("slider")
             );
           });
 
@@ -321,19 +329,18 @@ export default function QNA() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-300/50 dark:border-emerald-800/60 rounded-full mb-4 backdrop-blur-md shadow-sm">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
             <span className="text-emerald-800 dark:text-emerald-300 font-bold text-xs uppercase tracking-widest">
-              প্রশ্ন ও সমাধান (Q&A)
+              প্রতিদিনের ক্লাস স্লাইডার
             </span>
           </div>
 
           <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-emerald-50 tracking-tight leading-tight">
-            সকল প্রশ্নোত্তর ও সমাধান
+            প্রতিদিনের ক্লাস স্লাইড ও আপডেট
           </h1>
 
           <div className="h-1.5 w-32 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 rounded-full mt-4 mb-6 shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
 
           <p className="text-slate-600 dark:text-emerald-100/70 max-w-2xl text-base md:text-lg font-medium leading-relaxed">
-            আপনার প্রয়োজনীয় প্রশ্ন, সৃজনশীল ও নৈর্ব্যক্তিক সমাধানগুলো সহজে খুঁজে
-            পেতে নিচের সার্চ অপশনটি ব্যবহার করুন।
+            এখানে প্রতিদিনের ক্লাসের স্লাইড এবং প্রয়োজনীয় আপডেটগুলো সহজে খুঁজে পেতে নিচের সার্চ অপশনটি ব্যবহার করুন।
           </p>
         </div>
 
@@ -348,7 +355,7 @@ export default function QNA() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="অধ্যায়ের নাম, বিষয় বা প্রশ্ন দিয়ে সার্চ করুন..."
+                placeholder="অধ্যায়ের নাম, বিষয় বা স্লাইডের নাম দিয়ে সার্চ করুন..."
                 className="w-full bg-transparent text-slate-800 dark:text-emerald-50 placeholder-slate-400 dark:placeholder-emerald-200/50 focus:outline-none font-semibold text-base sm:text-lg px-2"
               />
               <button
@@ -363,144 +370,173 @@ export default function QNA() {
         </div>
 
         {filteredQnas.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
-            {filteredQnas.map((qna, index) => {
-              const qnaClassStr = (qna.className || "").toLowerCase();
-              const userBatchStr = (userBatch || "").toLowerCase().trim();
+          <div className="relative pt-6 px-2 sm:px-6">
+            <div className="absolute -top-4 right-4 z-20 hidden sm:flex items-center gap-2">
+              <button className="custom-swiper-prev p-2.5 rounded-full bg-emerald-900/40 hover:bg-emerald-800 text-emerald-300 border border-emerald-700/50 backdrop-blur-md transition-all cursor-pointer">
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <button className="custom-swiper-next p-2.5 rounded-full bg-emerald-900/40 hover:bg-emerald-800 text-emerald-300 border border-emerald-700/50 backdrop-blur-md transition-all cursor-pointer">
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
 
-              let isBatchMatched = false;
+            <Swiper
+              modules={[Navigation, Autoplay, Pagination]}
+              spaceBetween={24}
+              slidesPerView={1}
+              navigation={{
+                prevEl: ".custom-swiper-prev",
+                nextEl: ".custom-swiper-next",
+              }}
+              pagination={{ clickable: true }}
+              autoplay={{
+                delay: 3500,
+                disableOnInteraction: false,
+              }}
+              breakpoints={{
+                640: { slidesPerView: 2 },
+                1024: { slidesPerView: 4 },
+              }}
+              className="pb-12 !overflow-visible"
+            >
+              {filteredQnas.map((qna, index) => {
+                const qnaClassStr = (qna.className || "").toLowerCase();
+                const userBatchStr = (userBatch || "").toLowerCase().trim();
 
-              if (userBatchStr !== "") {
-                const userBatchMatches =
-                  userBatchStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
-                const qnaBatchMatches =
-                  qnaClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+                let isBatchMatched = false;
 
-                if (userBatchMatches.length > 0 && qnaBatchMatches.length > 0) {
-                  isBatchMatched = userBatchMatches.some((u) =>
-                    qnaBatchMatches.some((p) => p.includes(u) || u.includes(p)),
-                  );
+                if (userBatchStr !== "") {
+                  const userBatchMatches =
+                    userBatchStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+                  const qnaBatchMatches =
+                    qnaClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+
+                  if (
+                    userBatchMatches.length > 0 &&
+                    qnaBatchMatches.length > 0
+                  ) {
+                    isBatchMatched = userBatchMatches.some((u) =>
+                      qnaBatchMatches.some(
+                        (p) => p.includes(u) || u.includes(p)
+                      )
+                    );
+                  } else {
+                    isBatchMatched = qnaClassStr.includes(userBatchStr);
+                  }
                 } else {
-                  isBatchMatched = qnaClassStr.includes(userBatchStr);
+                  isBatchMatched = false;
                 }
-              } else {
-                isBatchMatched = false;
-              }
 
-              return (
-                <div
-                  key={qna.id || index}
-                  className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 animate-in fade-in slide-in-from-bottom-8 border border-emerald-900/30 bg-slate-900"
-                  style={{
-                    animationDelay: `${index * 100}ms`,
-                    animationFillMode: "both",
-                  }}
-                >
-                  {qna.image ? (
-                    <img
-                      src={qna.image}
-                      alt={qna.title}
-                      className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-slate-950 flex items-center justify-center">
-                      <MessageCircleQuestion className="w-16 h-16 text-emerald-500/40" />
-                    </div>
-                  )}
+                return (
+                  <SwiperSlide key={qna.id || index}>
+                    <div className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 border border-emerald-900/30 bg-slate-900">
+                      {qna.image ? (
+                        <img
+                          src={qna.image}
+                          alt={qna.title}
+                          className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-slate-950 flex items-center justify-center">
+                          <MessageCircleQuestion className="w-16 h-16 text-emerald-500/40" />
+                        </div>
+                      )}
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/30 group-hover:from-black transition-colors duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/30 group-hover:from-black transition-colors duration-300" />
 
-                  <div className="absolute top-4 inset-x-4 z-10 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
-                      <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-xs font-bold tracking-wide">
-                        {qna.createdAt
-                          ? new Date(qna.createdAt).toLocaleDateString(
-                              "bn-BD",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )
-                          : "সাম্প্রতিক"}
-                      </span>
-                    </div>
+                      <div className="absolute top-4 inset-x-4 z-10 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
+                          <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-xs font-bold tracking-wide">
+                            {qna.createdAt
+                              ? new Date(qna.createdAt).toLocaleDateString(
+                                  "bn-BD",
+                                  {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  }
+                                )
+                              : "সাম্প্রতিক"}
+                          </span>
+                        </div>
 
-                    {qna.className && (
-                      <span className="px-3 py-1 bg-emerald-600/90 backdrop-blur-md text-white font-extrabold text-[11px] rounded-full shadow-lg border border-emerald-400/30">
-                        {qna.className}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
-                    {qna.subject && (
-                      <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
-                        {qna.subject}
-                      </span>
-                    )}
-
-                    <h3 className="text-xl font-black text-white tracking-tight drop-shadow-md line-clamp-2">
-                      {qna.title}
-                    </h3>
-
-                    {qna.pdfUrl && (
-                      <>
-                        {!isAuthorizedStudent ? (
-                          <button
-                            onClick={() => {
-                              setModalMessage(
-                                "Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।",
-                              );
-                              setIsModalOpen(true);
-                            }}
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
-                          >
-                            <Lock className="w-4 h-4" />
-                            শুধুমাত্র স্টুডেন্টদের জন্য
-                          </button>
-                        ) : !isBatchMatched ? (
-                          <button
-                            onClick={() => {
-                              setModalMessage(
-                                "এই Q&A টি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!",
-                              );
-                              setIsModalOpen(true);
-                            }}
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
-                          >
-                            <Clock className="w-4 h-4 animate-spin" />
-                            Coming Soon
-                          </button>
-                        ) : (
-                          <a
-                            href={qna.pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
-                          >
-                            <HelpCircle className="w-4 h-4" />
-                            সমাধান দেখুন
-                          </a>
+                        {qna.className && (
+                          <span className="px-3 py-1 bg-emerald-600/90 backdrop-blur-md text-white font-extrabold text-[11px] rounded-full shadow-lg border border-emerald-400/30">
+                            {qna.className}
+                          </span>
                         )}
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+                      </div>
+
+                      <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
+                        {qna.subject && (
+                          <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
+                            {qna.subject}
+                          </span>
+                        )}
+
+                        <h3 className="text-xl font-black text-white tracking-tight drop-shadow-md line-clamp-2">
+                          {qna.title}
+                        </h3>
+
+                        {qna.pdfUrl && (
+                          <>
+                            {!isAuthorizedStudent ? (
+                              <button
+                                onClick={() => {
+                                  setModalMessage(
+                                    "ক্লাস স্লাইড দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।"
+                                  );
+                                  setIsModalOpen(true);
+                                }}
+                                className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                              >
+                                <Lock className="w-4 h-4" />
+                                শুধুমাত্র স্টুডেন্টদের জন্য
+                              </button>
+                            ) : !isBatchMatched ? (
+                              <button
+                                onClick={() => {
+                                  setModalMessage(
+                                    "এই ক্লাস স্লাইডটি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!"
+                                  );
+                                  setIsModalOpen(true);
+                                }}
+                                className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
+                              >
+                                <Clock className="w-4 h-4 animate-spin" />
+                                Coming Soon
+                              </button>
+                            ) : (
+                              <a
+                                href={qna.pdfUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#00a859] hover:bg-[#00904c] text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(0,168,89,0.4)] transition-all duration-300 hover:scale-[1.02]"
+                              >
+                                <HelpCircle className="w-4 h-4" />
+                                স্লাইড দেখুন
+                              </a>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </SwiperSlide>
+                );
+              })}
+            </Swiper>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 animate-in fade-in duration-700">
             <div className="px-10 py-10 bg-white/85 dark:bg-[#05130d]/85 backdrop-blur-2xl border border-emerald-100 dark:border-emerald-900/40 rounded-3xl text-center shadow-2xl max-w-md">
               <h3 className="text-2xl font-black text-slate-800 dark:text-emerald-100 mb-2">
-                কোনো Q&A পাওয়া যায়নি
+                কোনো স্লাইডার আইটেম পাওয়া যায়নি
               </h3>
               <p className="text-slate-500 dark:text-emerald-200/60 font-medium text-sm">
                 {searchTerm
-                  ? "আপনার সার্চের সাথে মিলে এমন কোনো Q&A নেই।"
-                  : "বর্তমানে কোনো Q&A আপলোড করা হয়নি।"}
+                  ? "আপনার সার্চের সাথে মিলে এমন কোনো স্লাইডার নেই।"
+                  : "বর্তমানে কোনো স্লাইডার আইটেম যোগ করা হয়নি।"}
               </p>
             </div>
           </div>

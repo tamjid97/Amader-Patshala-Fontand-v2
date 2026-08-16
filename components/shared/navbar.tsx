@@ -65,6 +65,7 @@ const navLinks = [
   { label: "Batch Time", href: "/batchTime", protected: true },
   { label: "Material", href: "/material", protected: true },
   { label: "QNA", href: "/qna", protected: true },
+  { label: "Class Slider", href: "/slider", protected: true },
   { label: "Result", href: "/result", protected: true },
 ]
 
