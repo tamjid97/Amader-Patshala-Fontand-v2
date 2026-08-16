@@ -119,7 +119,7 @@ interface IPdf {
   subject?: string;
   className?: string;
   category?: string;
-  type?: string; // <--- এখানে type প্রপার্টি যুক্ত করা হয়েছে
+  type?: string;
   pdfUrl?: string;
   link?: string;
   image?: string;
@@ -198,8 +198,11 @@ export default function PdfPage() {
     const category = (pdf.category || "").toLowerCase();
     const type = (pdf.type || "").toLowerCase();
 
-    // যদি className, category বা type-এ 'qna' বা 'question' থাকে, তবে তা এই পিডিএফ পেজে দেখাবে না
+    // যদি className, category বা type-এ 'slider', 'qna' বা 'question' থাকে, তবে তা এই পেজে দেখাবে না
     if (
+      className.includes("slider") ||
+      category.includes("slider") ||
+      type.includes("slider") ||
       className.includes("qna") || 
       category.includes("qna") || 
       type.includes("qna") ||

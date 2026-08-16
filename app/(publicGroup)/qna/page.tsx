@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, HelpCircle, Sparkles, Dna, Calendar, Lock, X, Clock, MessageCircleQuestion } from "lucide-react";
+import {
+  Search,
+  HelpCircle,
+  Sparkles,
+  Dna,
+  Calendar,
+  Lock,
+  X,
+  Clock,
+  MessageCircleQuestion,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getPdfs } from "@/app/(dashbordGroup)/moderator_dashbord/_actions/pdf";
 import { getMe } from "../_acttion/profile";
@@ -21,7 +31,10 @@ const CartoonFlask = () => (
     transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
     className="relative flex justify-center items-center"
   >
-    <svg viewBox="0 0 100 100" className="w-28 h-28 drop-shadow-[0_10px_20px_rgba(16,185,129,0.3)]">
+    <svg
+      viewBox="0 0 100 100"
+      className="w-28 h-28 drop-shadow-[0_10px_20px_rgba(16,185,129,0.3)]"
+    >
       <path
         d="M40 20 L40 40 L20 80 A10 10 0 0 0 30 95 L70 95 A10 10 0 0 0 80 80 L60 40 L60 20 Z"
         className="fill-emerald-200/90 dark:fill-emerald-950/80 stroke-emerald-500 dark:stroke-emerald-400"
@@ -29,21 +42,64 @@ const CartoonFlask = () => (
         strokeLinejoin="round"
       />
       <motion.path
-        animate={{ d: [
-          "M23 75 Q50 65 77 75 L70 90 A5 5 0 0 1 65 95 L35 95 A5 5 0 0 1 30 90 Z",
-          "M23 75 Q50 85 77 75 L70 90 A5 5 0 0 1 65 95 L35 95 A5 5 0 0 1 30 90 Z"
-        ]}}
+        animate={{
+          d: [
+            "M23 75 Q50 65 77 75 L70 90 A5 5 0 0 1 65 95 L35 95 A5 5 0 0 1 30 90 Z",
+            "M23 75 Q50 85 77 75 L70 90 A5 5 0 0 1 65 95 L35 95 A5 5 0 0 1 30 90 Z",
+          ],
+        }}
         transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
         className="fill-emerald-500 dark:fill-emerald-400"
       />
       <motion.circle cx="40" cy="78" r="4" fill="white" />
       <motion.circle cx="60" cy="78" r="4" fill="white" />
-      <motion.circle animate={{ cx: [41, 39, 41] }} transition={{ duration: 3, repeat: Infinity }} cx="41" cy="78" r="2" fill="black" />
-      <motion.circle animate={{ cx: [61, 59, 61] }} transition={{ duration: 3, repeat: Infinity }} cx="61" cy="78" r="2" fill="black" />
-      <path d="M46 86 Q50 90 54 86" stroke="white" strokeWidth="2.5" fill="transparent" strokeLinecap="round" />
-      <motion.circle animate={{ y: [0, -40], opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0 }} cx="45" cy="60" r="3" className="fill-emerald-300" />
-      <motion.circle animate={{ y: [0, -50], opacity: [0, 1, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 0.5 }} cx="55" cy="65" r="4" className="fill-emerald-200" />
-      <motion.circle animate={{ y: [0, -35], opacity: [0, 1, 0] }} transition={{ duration: 1.2, repeat: Infinity, delay: 1 }} cx="35" cy="70" r="2" className="fill-emerald-100" />
+      <motion.circle
+        animate={{ cx: [41, 39, 41] }}
+        transition={{ duration: 3, repeat: Infinity }}
+        cx="41"
+        cy="78"
+        r="2"
+        fill="black"
+      />
+      <motion.circle
+        animate={{ cx: [61, 59, 61] }}
+        transition={{ duration: 3, repeat: Infinity }}
+        cx="61"
+        cy="78"
+        r="2"
+        fill="black"
+      />
+      <path
+        d="M46 86 Q50 90 54 86"
+        stroke="white"
+        strokeWidth="2.5"
+        fill="transparent"
+        strokeLinecap="round"
+      />
+      <motion.circle
+        animate={{ y: [0, -40], opacity: [0, 1, 0] }}
+        transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
+        cx="45"
+        cy="60"
+        r="3"
+        className="fill-emerald-300"
+      />
+      <motion.circle
+        animate={{ y: [0, -50], opacity: [0, 1, 0] }}
+        transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+        cx="55"
+        cy="65"
+        r="4"
+        className="fill-emerald-200"
+      />
+      <motion.circle
+        animate={{ y: [0, -35], opacity: [0, 1, 0] }}
+        transition={{ duration: 1.2, repeat: Infinity, delay: 1 }}
+        cx="35"
+        cy="70"
+        r="2"
+        className="fill-emerald-100"
+      />
     </svg>
   </motion.div>
 );
@@ -71,8 +127,16 @@ function GlobalLoading() {
         {BACKGROUND_ELEMENTS.map((el, i) => (
           <motion.div
             key={i}
-            animate={{ y: [0, -100, 0], x: [0, el.xOffset, 0], rotate: [0, 360] }}
-            transition={{ duration: el.duration, repeat: Infinity, ease: "linear" }}
+            animate={{
+              y: [0, -100, 0],
+              x: [0, el.xOffset, 0],
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: el.duration,
+              repeat: Infinity,
+              ease: "linear",
+            }}
             className="absolute"
             style={{ top: `${el.top}%`, left: `${el.left}%` }}
           >
@@ -84,10 +148,15 @@ function GlobalLoading() {
         <CartoonFlask />
         <div className="flex flex-col items-center gap-3">
           <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-200">
-            <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            >
               <Dna className="w-5 h-5" />
             </motion.div>
-            <span className="text-xl font-extrabold tracking-tight">Roots Of Biology</span>
+            <span className="text-xl font-extrabold tracking-tight">
+              Roots Of Biology
+            </span>
           </div>
           <motion.div
             key={textIndex}
@@ -118,7 +187,7 @@ interface IQna {
   title: string;
   subject?: string;
   className?: string;
-  category?: string; 
+  category?: string;
   pdfUrl?: string;
   link?: string;
   image?: string;
@@ -132,7 +201,9 @@ export default function QNA() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
+  const [modalMessage, setModalMessage] = useState(
+    "Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।",
+  );
 
   useEffect(() => {
     async function fetchData() {
@@ -143,62 +214,76 @@ export default function QNA() {
         ]);
 
         if (userResponse) {
-          const userData = userResponse?.data?.user || userResponse?.data || userResponse?.user || userResponse;
-          
+          const userData =
+            userResponse?.data?.user ||
+            userResponse?.data ||
+            userResponse?.user ||
+            userResponse;
+
           const fetchedRole = userData?.role;
           if (fetchedRole) {
             setUserRole(fetchedRole);
           }
 
-          const fetchedBatch = 
-            userData?.class || 
-            userData?.batch || 
-            userData?.className || 
+          const fetchedBatch =
+            userData?.class ||
+            userData?.batch ||
+            userData?.className ||
             userData?.studentBatch ||
-            userData?.hscBatch || 
-            userData?.sscBatch || "";
+            userData?.hscBatch ||
+            userData?.sscBatch ||
+            "";
 
           if (fetchedBatch) {
             setUserBatch(fetchedBatch);
           }
         }
 
-        const rawData = Array.isArray(qnaResponse) ? qnaResponse : qnaResponse?.data;
-        
+        const rawData = Array.isArray(qnaResponse)
+          ? qnaResponse
+          : qnaResponse?.data;
+
         if (qnaResponse?.success && Array.isArray(rawData)) {
           // ফ্লেক্সিবল ফিল্টারিং: category, type, tag বা className এ qna থাকলেই তা গ্রহণ করবে
           const filteredByCategory = rawData.filter((item: any) => {
-             const cat = (item.category || "").toLowerCase().trim();
-             const type = (item.type || "").toLowerCase().trim();
-             const tag = (item.tag || "").toLowerCase().trim();
-             const cName = (item.className || "").toLowerCase().trim();
+            const cat = (item.category || "").toLowerCase().trim();
+            const type = (item.type || "").toLowerCase().trim();
+            const tag = (item.tag || "").toLowerCase().trim();
+            const cName = (item.className || "").toLowerCase().trim();
 
-             return (
-               cat.includes("qna") || 
-               cat.includes("question") || 
-               type.includes("qna") || 
-               tag.includes("qna") ||
-               cName.includes("qna")
-             );
+            return (
+              cat.includes("qna") ||
+              cat.includes("question") ||
+              type.includes("qna") ||
+              tag.includes("qna") ||
+              cName.includes("qna")
+            );
           });
 
-          const formatted = filteredByCategory.map((item: Record<string, unknown>) => ({
-            ...(item as unknown as IQna),
-            id: (item._id as string) || (item.id as string) || "",
-            pdfUrl: (item.pdfUrl as string) || (item.link as string) || "",
-            image: (item.image as string) || "",
-            title: (item.title as string) || "",
-            subject: (item.subject as string) || "",
-            className: (item.className as string) || "",
-            category: (item.category as string) || "",
-            createdAt: (item.createdAt as string) || new Date().toISOString().split("T")[0],
-          })).sort((a, b) => {
-            return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-          });
-          
+          const formatted = filteredByCategory
+            .map((item: Record<string, unknown>) => ({
+              ...(item as unknown as IQna),
+              id: (item._id as string) || (item.id as string) || "",
+              pdfUrl: (item.pdfUrl as string) || (item.link as string) || "",
+              image: (item.image as string) || "",
+              title: (item.title as string) || "",
+              subject: (item.subject as string) || "",
+              className: (item.className as string) || "",
+              category: (item.category as string) || "",
+              createdAt:
+                (item.createdAt as string) ||
+                new Date().toISOString().split("T")[0],
+            }))
+            .sort((a, b) => {
+              return (
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime()
+              );
+            });
+
           setQnas(formatted);
         }
-      } catch (error)  {
+      } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
         setLoading(false);
@@ -221,16 +306,17 @@ export default function QNA() {
   }
 
   const roleUpper = userRole?.toUpperCase()?.trim() || "";
-  const isAuthorizedStudent = roleUpper === "STUDENT" || roleUpper === "ADMIN" || roleUpper === "MODERATOR";
+  const isAuthorizedStudent =
+    roleUpper === "STUDENT" ||
+    roleUpper === "ADMIN" ||
+    roleUpper === "MODERATOR";
 
   return (
     <div className="relative pt-16 pb-12 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden">
-      
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#10b9810a_1px,transparent_1px),linear-gradient(to_bottom,#10b9810a_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none" />
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-400/10 dark:bg-emerald-600/10 blur-[140px] pointer-events-none rounded-full" />
 
       <div className="relative z-10 max-w-7xl mx-auto space-y-10">
-        
         <div className="flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-top-6 duration-700">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-100/70 dark:bg-emerald-950/60 border border-emerald-300/50 dark:border-emerald-800/60 rounded-full mb-4 backdrop-blur-md shadow-sm">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 animate-pulse" />
@@ -238,15 +324,16 @@ export default function QNA() {
               প্রশ্ন ও সমাধান (Q&A)
             </span>
           </div>
-          
+
           <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-emerald-50 tracking-tight leading-tight">
             সকল প্রশ্নোত্তর ও সমাধান
           </h1>
-          
+
           <div className="h-1.5 w-32 bg-gradient-to-r from-emerald-500 via-emerald-400 to-teal-300 rounded-full mt-4 mb-6 shadow-[0_0_12px_rgba(16,185,129,0.5)]" />
-          
+
           <p className="text-slate-600 dark:text-emerald-100/70 max-w-2xl text-base md:text-lg font-medium leading-relaxed">
-            আপনার প্রয়োজনীয় প্রশ্ন, সৃজনশীল ও নৈর্ব্যক্তিক সমাধানগুলো সহজে খুঁজে পেতে নিচের সার্চ অপশনটি ব্যবহার করুন।
+            আপনার প্রয়োজনীয় প্রশ্ন, সৃজনশীল ও নৈর্ব্যক্তিক সমাধানগুলো সহজে খুঁজে
+            পেতে নিচের সার্চ অপশনটি ব্যবহার করুন।
           </p>
         </div>
 
@@ -264,7 +351,7 @@ export default function QNA() {
                 placeholder="অধ্যায়ের নাম, বিষয় বা প্রশ্ন দিয়ে সার্চ করুন..."
                 className="w-full bg-transparent text-slate-800 dark:text-emerald-50 placeholder-slate-400 dark:placeholder-emerald-200/50 focus:outline-none font-semibold text-base sm:text-lg px-2"
               />
-              <button 
+              <button
                 type="button"
                 className="flex items-center justify-center gap-2 px-8 py-3.5 bg-gradient-to-r from-[#00a859] to-emerald-600 hover:from-[#00904c] hover:to-emerald-700 text-white rounded-full font-extrabold text-sm shadow-[0_4px_15px_rgba(0,168,89,0.3)] hover:shadow-[0_6px_20px_rgba(0,168,89,0.4)] transition-all duration-300 transform hover:scale-[1.02] active:scale-95 whitespace-nowrap cursor-pointer"
               >
@@ -284,12 +371,14 @@ export default function QNA() {
               let isBatchMatched = false;
 
               if (userBatchStr !== "") {
-                const userBatchMatches = userBatchStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
-                const qnaBatchMatches = qnaClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+                const userBatchMatches =
+                  userBatchStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
+                const qnaBatchMatches =
+                  qnaClassStr.match(/hsc[-]?\d+|ssc[-]?\d+|\d{2}/g) || [];
 
                 if (userBatchMatches.length > 0 && qnaBatchMatches.length > 0) {
                   isBatchMatched = userBatchMatches.some((u) =>
-                    qnaBatchMatches.some((p) => p.includes(u) || u.includes(p))
+                    qnaBatchMatches.some((p) => p.includes(u) || u.includes(p)),
                   );
                 } else {
                   isBatchMatched = qnaClassStr.includes(userBatchStr);
@@ -299,16 +388,19 @@ export default function QNA() {
               }
 
               return (
-                <div 
+                <div
                   key={qna.id || index}
                   className="group relative h-[410px] rounded-[2rem] overflow-hidden shadow-2xl transition-all duration-500 hover:-translate-y-2.5 animate-in fade-in slide-in-from-bottom-8 border border-emerald-900/30 bg-slate-900"
-                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animationFillMode: "both",
+                  }}
                 >
                   {qna.image ? (
-                    <img 
-                      src={qna.image} 
-                      alt={qna.title} 
-                      className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85" 
+                    <img
+                      src={qna.image}
+                      alt={qna.title}
+                      className="absolute inset-0 h-full w-full object-cover object-center group-hover:scale-110 transition-transform duration-700 opacity-85"
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gradient-to-br from-emerald-950 to-slate-950 flex items-center justify-center">
@@ -322,7 +414,16 @@ export default function QNA() {
                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur-md rounded-full border border-emerald-500/30 text-emerald-300 shadow-lg">
                       <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                       <span className="text-xs font-bold tracking-wide">
-                        {qna.createdAt ? new Date(qna.createdAt).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' }) : 'সাম্প্রতিক'}
+                        {qna.createdAt
+                          ? new Date(qna.createdAt).toLocaleDateString(
+                              "bn-BD",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )
+                          : "সাম্প্রতিক"}
                       </span>
                     </div>
 
@@ -334,7 +435,6 @@ export default function QNA() {
                   </div>
 
                   <div className="absolute inset-x-0 bottom-0 p-6 z-10 flex flex-col items-center text-center space-y-4">
-                    
                     {qna.subject && (
                       <span className="text-xs font-bold text-emerald-300 tracking-wider uppercase bg-emerald-950/80 px-3.5 py-1 rounded-full border border-emerald-800/60 backdrop-blur-md">
                         {qna.subject}
@@ -350,7 +450,9 @@ export default function QNA() {
                         {!isAuthorizedStudent ? (
                           <button
                             onClick={() => {
-                              setModalMessage("Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।");
+                              setModalMessage(
+                                "Q&A দেখতে হলে স্টুডেন্ট হওয়ার জন্য অনুরোধ করুন।",
+                              );
                               setIsModalOpen(true);
                             }}
                             className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-sm shadow-[0_4px_20px_rgba(220,38,38,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
@@ -361,7 +463,9 @@ export default function QNA() {
                         ) : !isBatchMatched ? (
                           <button
                             onClick={() => {
-                              setModalMessage("এই Q&A টি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!");
+                              setModalMessage(
+                                "এই Q&A টি আপনার ব্যাচের জন্য খুব শীঘ্রই আসছে!",
+                              );
                               setIsModalOpen(true);
                             }}
                             className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 font-extrabold text-sm shadow-[0_4px_20px_rgba(0,0,0,0.4)] transition-all duration-300 hover:scale-[1.02] cursor-pointer border border-amber-500/30"
@@ -382,7 +486,6 @@ export default function QNA() {
                         )}
                       </>
                     )}
-
                   </div>
                 </div>
               );
@@ -395,12 +498,13 @@ export default function QNA() {
                 কোনো Q&A পাওয়া যায়নি
               </h3>
               <p className="text-slate-500 dark:text-emerald-200/60 font-medium text-sm">
-                {searchTerm ? "আপনার সার্চের সাথে মিলে এমন কোনো Q&A নেই।" : "বর্তমানে কোনো Q&A আপলোড করা হয়নি।"}
+                {searchTerm
+                  ? "আপনার সার্চের সাথে মিলে এমন কোনো Q&A নেই।"
+                  : "বর্তমানে কোনো Q&A আপলোড করা হয়নি।"}
               </p>
             </div>
           </div>
         )}
-
       </div>
 
       <AnimatePresence>
@@ -452,7 +556,6 @@ export default function QNA() {
           </div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }
